@@ -1,0 +1,812 @@
+<title>Cottage</title>
+<style>
+  :root {
+    --bg: #eef1f4; --ink: #1c2024; --muted: #5b646d;
+    --panel: rgba(255,255,255,.86); --line: rgba(0,0,0,.12); --sky: #dfe6ec;
+  }
+  :root:not([data-theme="light"]) { }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14171a; --ink: #e8ecef; --muted: #98a2ac;
+      --panel: rgba(28,32,36,.86); --line: rgba(255,255,255,.14); --sky: #0f1316;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14171a; --ink: #e8ecef; --muted: #98a2ac;
+    --panel: rgba(28,32,36,.86); --line: rgba(255,255,255,.14); --sky: #0f1316;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink); overflow: hidden;
+    font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  #gl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+  #ui {
+    position: fixed; top: 14px; left: 14px; z-index: 2; width: 210px; max-height: calc(100vh - 28px);
+    overflow-y: auto; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px;
+    background: var(--panel); backdrop-filter: blur(12px); box-shadow: 0 6px 24px rgba(0,0,0,.12);
+  }
+  #ui h1 { margin: 0 0 2px; font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
+  #ui p.sub { margin: 0 0 12px; font-size: 12px; color: var(--muted); }
+  #ui h2 {
+    margin: 14px 0 6px; font-size: 10.5px; font-weight: 600; letter-spacing: .09em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  label { display: flex; align-items: center; gap: 8px; padding: 3px 0; cursor: pointer; font-size: 13px; }
+  label input { accent-color: #4a7fd0; margin: 0; }
+  .sw { width: 11px; height: 11px; border-radius: 3px; border: 1px solid rgba(0,0,0,.22); flex: none; }
+  .btns { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  button {
+    font: inherit; font-size: 12px; padding: 4px 10px; border-radius: 7px;
+    border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer;
+  }
+  button:hover { background: rgba(127,127,127,.14); }
+  #hint { margin-top: 14px; font-size: 11.5px; color: var(--muted); line-height: 1.4; }
+  #err { position: fixed; inset: 0; display: grid; place-items: center; padding: 40px; color: #c0392b; }
+  #labels { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+  .lbl {
+    position: absolute; transform: translate(-50%, -50%); white-space: nowrap;
+    font-size: 11.5px; font-weight: 600; letter-spacing: .01em; color: #2a2f34;
+    text-shadow: 0 0 3px rgba(255,255,255,.85), 0 0 8px rgba(255,255,255,.7);
+  }
+</style>
+
+<canvas id="gl"></canvas>
+<div id="labels"></div>
+<aside id="ui">
+  <h1 id="title">Cottage</h1>
+  <p class="sub" id="stats">loading…</p>
+  <h2>Show</h2>
+  <div id="layers"></div>
+  <h2>View</h2>
+  <div class="btns">
+    <button data-view="iso">Iso</button>
+    <button data-view="plan">Plan</button>
+    <button data-view="front">Front</button>
+    <button data-view="back">Back</button>
+    <button data-view="layout">Layout</button>
+  </div>
+  <p id="hint">Drag to orbit · shift-drag or right-drag to pan · scroll to zoom</p>
+</aside>
+
+<script id="model" type="text/plain">__IFC_MODEL__</script>
+<script>
+"use strict";
+(function () {
+
+// ---------------------------------------------------------------- STEP parser
+// Only the handful of IFC entities that ifcgen emits are understood. Every
+// instance is written on its own line, so the file can be read line by line.
+
+function splitArgs(s) {
+  const out = []; let depth = 0, cur = "", inStr = false;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (inStr) {
+      cur += c;
+      if (c === "'") { if (s[i + 1] === "'") cur += s[++i]; else inStr = false; }
+      continue;
+    }
+    if (c === "'") { inStr = true; cur += c; continue; }
+    if (c === "(") { depth++; cur += c; continue; }
+    if (c === ")") { depth--; cur += c; continue; }
+    if (c === "," && depth === 0) { out.push(cur.trim()); cur = ""; continue; }
+    cur += c;
+  }
+  out.push(cur.trim());
+  return out;
+}
+
+const ents = new Map();
+function parse(text) {
+  const re = /^#(\d+)\s*=\s*([A-Z0-9_]+)\s*\((.*)\);$/;
+  for (const raw of text.split("\n")) {
+    const m = re.exec(raw.trim());
+    if (m) ents.set(+m[1], { type: m[2], args: splitArgs(m[3]) });
+  }
+}
+
+const ref = v => (v && v[0] === "#" ? +v.slice(1) : 0);
+const num = v => parseFloat(v);
+const list = v => (v && v[0] === "(" ? splitArgs(v.slice(1, -1)) : []);
+const str = v => (v && v[0] === "'" ? v.slice(1, -1).replace(/''/g, "'") : "");
+const enumOf = v => (v && v[0] === "." ? v.slice(1, -1) : "");
+
+const coords = id => list(ents.get(id).args[0]).map(num);
+
+// ------------------------------------------------------------------- 3D maths
+// Object transforms are row-major 4x4 and applied on the CPU; only the
+// view-projection matrix reaches the GPU, and that one is column-major.
+
+const IDENT = [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1];
+function mulRM(a, b) {
+  const r = new Array(16);
+  for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) {
+    let s = 0;
+    for (let k = 0; k < 4; k++) s += a[i * 4 + k] * b[k * 4 + j];
+    r[i * 4 + j] = s;
+  }
+  return r;
+}
+const xf = (m, p) => [
+  m[0] * p[0] + m[1] * p[1] + m[2] * p[2] + m[3],
+  m[4] * p[0] + m[5] * p[1] + m[6] * p[2] + m[7],
+  m[8] * p[0] + m[9] * p[1] + m[10] * p[2] + m[11],
+];
+const xy = (m, p) => [m[0] * p[0] + m[1] * p[1] + m[3], m[4] * p[0] + m[5] * p[1] + m[7]];
+
+const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const cross = (a, b) => [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
+const dot = (a, b) => a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
+function unit(v) {
+  const l = Math.hypot(v[0], v[1], v[2]) || 1;
+  return [v[0] / l, v[1] / l, v[2] / l];
+}
+
+// IfcAxis2Placement3D: Axis is local +Z, RefDirection is projected to give +X.
+function axis3(id) {
+  const a = ents.get(id).args;
+  const loc = coords(ref(a[0]));
+  const z = unit(a[1] === "$" ? [0, 0, 1] : coords(ref(a[1])));
+  let x = a[2] === "$" ? [1, 0, 0] : coords(ref(a[2]));
+  x = unit(sub(x, [z[0] * dot(x, z), z[1] * dot(x, z), z[2] * dot(x, z)]));
+  const y = cross(z, x);
+  return [x[0], y[0], z[0], loc[0],
+          x[1], y[1], z[1], loc[1],
+          x[2], y[2], z[2], loc[2],
+          0, 0, 0, 1];
+}
+
+function axis2(id) {
+  const a = ents.get(id).args;
+  const loc = coords(ref(a[0]));
+  let x = a[1] === "$" ? [1, 0] : coords(ref(a[1]));
+  const l = Math.hypot(x[0], x[1]) || 1;
+  x = [x[0] / l, x[1] / l];
+  return [x[0], -x[1], 0, loc[0],
+          x[1],  x[0], 0, loc[1],
+          0, 0, 1, 0,
+          0, 0, 0, 1];
+}
+
+const placementCache = new Map();
+function placement(id) {
+  if (!id) return IDENT;
+  if (placementCache.has(id)) return placementCache.get(id);
+  const a = ents.get(id).args;
+  const m = mulRM(placement(ref(a[0])), axis3(ref(a[1])));
+  placementCache.set(id, m);
+  return m;
+}
+
+// -------------------------------------------------------------------- solids
+// A profile becomes a polygon in the profile plane; sweeping it gives a prism.
+
+function profile(id) {
+  const e = ents.get(id);
+  if (e.type === "IFCRECTANGLEPROFILEDEF") {
+    const m = e.args[2] === "$" ? IDENT : axis2(ref(e.args[2]));
+    const x = num(e.args[3]) / 2, y = num(e.args[4]) / 2;
+    return [[-x, -y], [x, -y], [x, y], [-x, y]].map(p => xy(m, p));
+  }
+  if (e.type === "IFCARBITRARYCLOSEDPROFILEDEF") {
+    const curve = ents.get(ref(e.args[2]));
+    const pts = list(curve.args[0]).map(r => coords(ref(r)).slice(0, 2));
+    const a = pts[0], b = pts[pts.length - 1];
+    if (pts.length > 1 && Math.hypot(a[0] - b[0], a[1] - b[1]) < 1e-6) pts.pop();
+    return pts;
+  }
+  throw new Error("unsupported profile: " + e.type);
+}
+
+// prism returns the bottom and top rings of an extruded solid, already carried
+// through the solid's own placement and the product's placement.
+function prism(solidId, world) {
+  const a = ents.get(solidId).args;
+  const poly = profile(ref(a[0]));
+  const pos = a[1] === "$" ? IDENT : axis3(ref(a[1]));
+  const d = coords(ref(a[2]));
+  const depth = num(a[3]);
+  const m = mulRM(world, pos);
+  const bottom = poly.map(p => xf(m, [p[0], p[1], 0]));
+  const top = poly.map(p => xf(m, [p[0] + d[0] * depth, p[1] + d[1] * depth, d[2] * depth]));
+  return { poly, bottom, top };
+}
+
+function solidsOf(productId) {
+  const e = ents.get(productId);
+  const rep = ref(e.args[6]);
+  if (!rep) return [];
+  const out = [];
+  for (const r of list(ents.get(rep).args[2])) {
+    const shape = ents.get(ref(r));
+    if (!shape || shape.type !== "IFCSHAPEREPRESENTATION") continue;
+    for (const it of list(shape.args[3])) {
+      const id = ref(it);
+      const t = ents.get(id) && ents.get(id).type;
+      if (t === "IFCEXTRUDEDAREASOLID" || t === "IFCFACETEDBREP") out.push(id);
+    }
+  }
+  return out;
+}
+
+// IfcFacetedBrep: every face is planar and convex here, so a fan triangulation
+// is enough.
+function brepFaces(id, world) {
+  const shell = ents.get(ref(ents.get(id).args[0]));
+  const out = [];
+  for (const fr of list(shell.args[0])) {
+    const face = ents.get(ref(fr));
+    for (const br of list(face.args[0])) {
+      const bound = ents.get(ref(br));
+      const loop = ents.get(ref(bound.args[0]));
+      if (!loop || loop.type !== "IFCPOLYLOOP") continue;
+      let ring = list(loop.args[0]).map(r => xf(world, coords(ref(r))));
+      if (bound.args[1] === ".F.") ring = ring.slice().reverse();
+      out.push(ring);
+    }
+  }
+  return out;
+}
+
+function aabb(pts) {
+  const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
+  for (const p of pts) for (let i = 0; i < 3; i++) {
+    if (p[i] < min[i]) min[i] = p[i];
+    if (p[i] > max[i]) max[i] = p[i];
+  }
+  return { min, max };
+}
+
+// ------------------------------------------------------------ mesh assembly
+
+function triangulate(poly) {
+  const n = poly.length;
+  if (n < 3) return [];
+  let area = 0;
+  for (let i = 0; i < n; i++) {
+    const a = poly[i], b = poly[(i + 1) % n];
+    area += a[0] * b[1] - b[0] * a[1];
+  }
+  const idx = [...Array(n).keys()];
+  if (area < 0) idx.reverse();
+  const cr = (a, b, c) =>
+    (poly[b][0] - poly[a][0]) * (poly[c][1] - poly[a][1]) -
+    (poly[b][1] - poly[a][1]) * (poly[c][0] - poly[a][0]);
+  const inside = (p, a, b, c) => {
+    const s = (x, y) =>
+      (poly[y][0] - poly[x][0]) * (poly[p][1] - poly[x][1]) -
+      (poly[y][1] - poly[x][1]) * (poly[p][0] - poly[x][0]);
+    const d1 = s(a, b), d2 = s(b, c), d3 = s(c, a);
+    return !((d1 < 0 || d2 < 0 || d3 < 0) && (d1 > 0 || d2 > 0 || d3 > 0));
+  };
+  const tris = [];
+  let guard = 4 * n;
+  while (idx.length > 3 && guard-- > 0) {
+    let cut = false;
+    for (let i = 0; i < idx.length; i++) {
+      const a = idx[(i + idx.length - 1) % idx.length], b = idx[i], c = idx[(i + 1) % idx.length];
+      if (cr(a, b, c) <= 0) continue;
+      let ok = true;
+      for (const j of idx) {
+        if (j === a || j === b || j === c) continue;
+        if (inside(j, a, b, c)) { ok = false; break; }
+      }
+      if (!ok) continue;
+      tris.push([a, b, c]);
+      idx.splice(i, 1);
+      cut = true;
+      break;
+    }
+    if (!cut) break;
+  }
+  if (idx.length === 3) tris.push([idx[0], idx[1], idx[2]]);
+  return tris;
+}
+
+function Mesh() { return { pos: [], nrm: [], col: [] }; }
+
+function tri(mesh, a, b, c, color) {
+  const n = unit(cross(sub(b, a), sub(c, a)));
+  for (const p of [a, b, c]) {
+    mesh.pos.push(p[0], p[1], p[2]);
+    mesh.nrm.push(n[0], n[1], n[2]);
+    mesh.col.push(color[0], color[1], color[2]);
+  }
+}
+
+function addPrism(mesh, p, color) {
+  const tris = triangulate(p.poly);
+  for (const [a, b, c] of tris) {
+    tri(mesh, p.bottom[c], p.bottom[b], p.bottom[a], color);
+    tri(mesh, p.top[a], p.top[b], p.top[c], color);
+  }
+  const n = p.poly.length;
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    tri(mesh, p.bottom[i], p.bottom[j], p.top[j], color);
+    tri(mesh, p.bottom[i], p.top[j], p.top[i], color);
+  }
+}
+
+// Rooms are drawn as a floor plate rather than the full-height volume the IFC
+// carries, so that they read as coloured areas on the plan instead of hiding
+// everything above them.
+function addPlate(mesh, p, z, color) {
+  let best = null, bestArea = -1;
+  for (const [a, b, c] of triangulate(p.poly)) {
+    const A = [p.bottom[a][0], p.bottom[a][1], z];
+    const B = [p.bottom[b][0], p.bottom[b][1], z];
+    const C = [p.bottom[c][0], p.bottom[c][1], z];
+    tri(mesh, A, B, C, color);
+    const area = Math.abs((B[0]-A[0])*(C[1]-A[1]) - (B[1]-A[1])*(C[0]-A[0]));
+    if (area > bestArea) { bestArea = area; best = [(A[0]+B[0]+C[0])/3, (A[1]+B[1]+C[1])/3, z]; }
+  }
+  return best;
+}
+
+// A window or door is drawn as a white-trimmed board with the glass or the
+// painted leaf set slightly proud of it, which is what reads as a window at
+// this scale.
+function addOpeningPanel(mesh, p, glass) {
+  addPrism(mesh, p, TRIM);
+  const m = 110;
+  for (let i = 0; i < p.poly.length; i++) {
+    const j = (i + 1) % p.poly.length;
+    const b0 = p.bottom[i];
+    const eu = sub(p.bottom[j], b0), ev = sub(p.top[i], b0);
+    const lu = Math.hypot(eu[0], eu[1], eu[2]), lv = Math.hypot(ev[0], ev[1], ev[2]);
+    if (lu < 2 * m + 120 || lv < 2 * m + 120) continue; // the thin edges of the board
+    const u = unit(eu), v = unit(ev), nn = unit(cross(eu, ev));
+    const at = (a, b) => [
+      b0[0] + u[0]*a + v[0]*b + nn[0]*4,
+      b0[1] + u[1]*a + v[1]*b + nn[1]*4,
+      b0[2] + u[2]*a + v[2]*b + nn[2]*4,
+    ];
+    const q = [at(m, m), at(lu - m, m), at(lu - m, lv - m), at(m, lv - m)];
+    tri(mesh, q[0], q[1], q[2], glass);
+    tri(mesh, q[0], q[2], q[3], glass);
+  }
+}
+
+function addBox(mesh, min, max, color) {
+  const v = [
+    [min[0], min[1], min[2]], [max[0], min[1], min[2]], [max[0], max[1], min[2]], [min[0], max[1], min[2]],
+    [min[0], min[1], max[2]], [max[0], min[1], max[2]], [max[0], max[1], max[2]], [min[0], max[1], max[2]],
+  ];
+  const faces = [[0,3,2,1],[4,5,6,7],[0,1,5,4],[1,2,6,5],[2,3,7,6],[3,0,4,7]];
+  for (const f of faces) {
+    tri(mesh, v[f[0]], v[f[1]], v[f[2]], color);
+    tri(mesh, v[f[0]], v[f[2]], v[f[3]], color);
+  }
+}
+
+// A wall is a box and its openings are boxes cut straight through it, all axis
+// aligned, so the difference is a handful of slices rather than a general CSG.
+function cutWall(box, voids) {
+  const along = (box.max[0] - box.min[0]) >= (box.max[1] - box.min[1]) ? 0 : 1;
+  const other = along === 0 ? 1 : 0;
+  const cuts = voids.map(v => ({
+    lo: Math.max(v.min[along], box.min[along]),
+    hi: Math.min(v.max[along], box.max[along]),
+    z0: Math.max(v.min[2], box.min[2]),
+    z1: Math.min(v.max[2], box.max[2]),
+  })).filter(c => c.hi - c.lo > 1e-6).sort((a, b) => a.lo - b.lo);
+
+  const parts = [];
+  const slice = (lo, hi, z0, z1) => {
+    if (hi - lo < 1e-6 || z1 - z0 < 1e-6) return;
+    const min = [0, 0, z0], max = [0, 0, z1];
+    min[along] = lo; max[along] = hi;
+    min[other] = box.min[other]; max[other] = box.max[other];
+    parts.push({ min, max });
+  };
+  let cur = box.min[along];
+  for (const c of cuts) {
+    slice(cur, c.lo, box.min[2], box.max[2]);
+    slice(c.lo, c.hi, box.min[2], c.z0);
+    slice(c.lo, c.hi, c.z1, box.max[2]);
+    cur = Math.max(cur, c.hi);
+  }
+  slice(cur, box.max[along], box.min[2], box.max[2]);
+  return parts;
+}
+
+// ------------------------------------------------------------------- layers
+
+// Falu red boards, white trim, black profiled steel roof, as photographed.
+const TRIM = [0.94, 0.94, 0.91];
+const LAYERS = [
+  { key: "walls",     name: "Exterior walls", color: [0.61, 0.23, 0.16], on: true },
+  { key: "partition", name: "Partitions",     color: [0.80, 0.78, 0.74], on: true },
+  { key: "roof",      name: "Roof",           color: [0.15, 0.16, 0.17], on: true },
+  { key: "floor",     name: "Floor slab",     color: [0.44, 0.43, 0.42], on: true },
+  { key: "windows",   name: "Windows",        color: [0.52, 0.66, 0.72], on: true },
+  { key: "doors",     name: "Doors",          color: [0.24, 0.38, 0.47], on: true },
+  { key: "site",      name: "Ground",         color: [0.95, 0.96, 0.97], on: true },
+  { key: "rooms",     name: "Rooms",          color: [0.95, 0.72, 0.30], on: false, alpha: 0.55 },
+];
+const ROOM_COLORS = [
+  [0.96, 0.74, 0.33], [0.44, 0.72, 0.62], [0.60, 0.66, 0.88],
+  [0.90, 0.56, 0.52], [0.72, 0.62, 0.86], [0.55, 0.76, 0.45],
+];
+const labels = [];
+const meshes = {};
+for (const l of LAYERS) meshes[l.key] = Mesh();
+
+function build() {
+  // Openings, keyed by the element they are cut out of.
+  const voidsByWall = new Map();
+  for (const [, e] of ents) {
+    if (e.type !== "IFCRELVOIDSELEMENT") continue;
+    const wall = ref(e.args[4]), opening = ref(e.args[5]);
+    if (!voidsByWall.has(wall)) voidsByWall.set(wall, []);
+    voidsByWall.get(wall).push(opening);
+  }
+
+  const colorOf = k => LAYERS.find(l => l.key === k).color;
+  let counts = { walls: 0, windows: 0, doors: 0, rooms: 0 };
+
+  for (const [id, e] of ents) {
+    let layer = null, color = null;
+    if (e.type === "IFCWALL" || e.type === "IFCWALLSTANDARDCASE") {
+      layer = enumOf(e.args[8]) === "PARTITIONING" ? "partition" : "walls";
+      counts.walls++;
+    } else if (e.type === "IFCROOF") {
+      layer = "roof";
+    } else if (e.type === "IFCSLAB") {
+      layer = enumOf(e.args[8]) === "ROOF" ? "roof" : "floor";
+    } else if (e.type === "IFCWINDOW") {
+      layer = "windows"; counts.windows++;
+    } else if (e.type === "IFCDOOR") {
+      layer = "doors"; counts.doors++;
+      // The entrance is the blue one; interior doors are timber.
+      if (!/entrance/i.test(str(e.args[2]))) color = [0.60, 0.44, 0.29];
+    } else if (e.type === "IFCSPACE") {
+      layer = "rooms";
+      color = ROOM_COLORS[counts.rooms % ROOM_COLORS.length];
+      counts.rooms++;
+    } else continue;
+
+    color = color || colorOf(layer);
+    const mesh = meshes[layer];
+    const world = placement(ref(e.args[5]));
+
+    for (const sid of solidsOf(id)) {
+      if (ents.get(sid).type === "IFCFACETEDBREP") {
+        for (const ring of brepFaces(sid, world)) {
+          for (let i = 2; i < ring.length; i++) tri(mesh, ring[0], ring[i - 1], ring[i], color);
+        }
+        continue;
+      }
+      const p = prism(sid, world);
+      if (layer === "rooms") {
+        const at = addPlate(mesh, p, p.bottom[0][2] + 25, color);
+        const long = str(e.args[7]) || str(e.args[2]);
+        if (at && long) labels.push({ text: long, at });
+        continue;
+      }
+      const voids = voidsByWall.get(id);
+      const rectangular = ents.get(ref(ents.get(sid).args[0])).type === "IFCRECTANGLEPROFILEDEF";
+      if (voids && voids.length && rectangular) {
+        const box = aabb(p.bottom.concat(p.top));
+        const holes = [];
+        for (const v of voids) {
+          const vw = placement(ref(ents.get(v).args[5]));
+          for (const vs of solidsOf(v)) {
+            const vp = prism(vs, vw);
+            holes.push(aabb(vp.bottom.concat(vp.top)));
+          }
+        }
+        for (const part of cutWall(box, holes)) addBox(mesh, part.min, part.max, color);
+      } else if (layer === "windows" || layer === "doors") {
+        addOpeningPanel(mesh, p, color);
+      } else {
+        addPrism(mesh, p, color);
+      }
+    }
+  }
+  return counts;
+}
+
+// Ground plane and a north arrow, from the true north direction stored in the
+// IFC geometric context.
+function addSite(bounds) {
+  const m = meshes.site;
+  const cx = (bounds.min[0] + bounds.max[0]) / 2, cy = (bounds.min[1] + bounds.max[1]) / 2;
+  const r = Math.max(bounds.max[0] - bounds.min[0], bounds.max[1] - bounds.min[1]) * 1.9;
+  const z = bounds.min[2] - 1;
+  tri(m, [cx-r, cy-r, z], [cx+r, cy-r, z], [cx+r, cy+r, z], [0.93,0.94,0.95]);
+  tri(m, [cx-r, cy-r, z], [cx+r, cy+r, z], [cx-r, cy+r, z], [0.93,0.94,0.95]);
+
+  let n = [0, 1];
+  for (const [, e] of ents) {
+    if (e.type === "IFCGEOMETRICREPRESENTATIONCONTEXT" && e.args[5] !== "$") {
+      n = coords(ref(e.args[5])); break;
+    }
+  }
+  const l = Math.hypot(n[0], n[1]) || 1;
+  n = [n[0] / l, n[1] / l];
+  const side = [-n[1], n[0]];
+  const ox = bounds.min[0] - r * 0.30, oy = bounds.min[1] - r * 0.30, s = 1400, zz = z + 2;
+  const tip  = [ox + n[0]*s,        oy + n[1]*s,        zz];
+  const back = [ox - n[0]*s*0.45,   oy - n[1]*s*0.45,   zz];
+  const lw   = [ox + side[0]*s*0.42 - n[0]*s*0.15, oy + side[1]*s*0.42 - n[1]*s*0.15, zz];
+  const rw   = [ox - side[0]*s*0.42 - n[0]*s*0.15, oy - side[1]*s*0.42 - n[1]*s*0.15, zz];
+  const ink = [0.22, 0.26, 0.30];
+  tri(m, tip, lw, back, ink);
+  tri(m, tip, back, rw, ink);
+}
+
+// ---------------------------------------------------------------------- WebGL
+
+const canvas = document.getElementById("gl");
+const gl = canvas.getContext("webgl", { antialias: true, alpha: false });
+
+function shader(type, src) {
+  const s = gl.createShader(type);
+  gl.shaderSource(s, src);
+  gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+  return s;
+}
+
+const VS = `
+attribute vec3 aPos; attribute vec3 aNrm; attribute vec3 aCol;
+uniform mat4 uVP;
+varying vec3 vN; varying vec3 vC;
+void main() { vN = aNrm; vC = aCol; gl_Position = uVP * vec4(aPos, 1.0); }`;
+
+const FS = `
+precision mediump float;
+varying vec3 vN; varying vec3 vC;
+uniform float uAlpha;
+void main() {
+  vec3 n = normalize(vN);
+  float key  = max(dot(n, normalize(vec3(0.40, -0.55, 0.73))), 0.0);
+  float fill = max(dot(n, normalize(vec3(-0.55, 0.35, 0.25))), 0.0);
+  float sky  = 0.5 + 0.5 * n.z;
+  float l = 0.26 + 0.58 * key + 0.16 * fill + 0.10 * sky;
+  gl_FragColor = vec4(vC * l, uAlpha);
+}`;
+
+const prog = gl.createProgram();
+gl.attachShader(prog, shader(gl.VERTEX_SHADER, VS));
+gl.attachShader(prog, shader(gl.FRAGMENT_SHADER, FS));
+gl.linkProgram(prog);
+gl.useProgram(prog);
+const aPos = gl.getAttribLocation(prog, "aPos");
+const aNrm = gl.getAttribLocation(prog, "aNrm");
+const aCol = gl.getAttribLocation(prog, "aCol");
+const uVP = gl.getUniformLocation(prog, "uVP");
+const uAlpha = gl.getUniformLocation(prog, "uAlpha");
+
+function upload(mesh) {
+  if (!mesh.pos.length) return null;
+  const mk = arr => {
+    const b = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, b);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr), gl.STATIC_DRAW);
+    return b;
+  };
+  return { pos: mk(mesh.pos), nrm: mk(mesh.nrm), col: mk(mesh.col), n: mesh.pos.length / 3 };
+}
+
+// Column-major, the way WebGL wants them.
+function perspective(fovy, aspect, near, far) {
+  const f = 1 / Math.tan(fovy / 2), nf = 1 / (near - far);
+  return [f/aspect,0,0,0, 0,f,0,0, 0,0,(far+near)*nf,-1, 0,0,2*far*near*nf,0];
+}
+function lookAt(eye, ctr, up) {
+  const z = unit(sub(eye, ctr));
+  const x = unit(cross(up, z));
+  const y = cross(z, x);
+  return [x[0],y[0],z[0],0, x[1],y[1],z[1],0, x[2],y[2],z[2],0,
+          -dot(x,eye), -dot(y,eye), -dot(z,eye), 1];
+}
+function mulCM(a, b) {
+  const r = new Array(16);
+  for (let c = 0; c < 4; c++) for (let rw = 0; rw < 4; rw++) {
+    let s = 0;
+    for (let k = 0; k < 4; k++) s += a[k * 4 + rw] * b[c * 4 + k];
+    r[c * 4 + rw] = s;
+  }
+  return r;
+}
+
+// ----------------------------------------------------------------- run it all
+
+let buffers = {}, bounds, cam;
+
+function boundsOf() {
+  const pts = [];
+  for (const k of ["walls", "partition", "roof", "floor"]) {
+    const p = meshes[k].pos;
+    for (let i = 0; i < p.length; i += 3) pts.push([p[i], p[i+1], p[i+2]]);
+  }
+  return aabb(pts);
+}
+
+function frame(view) {
+  const c = [(bounds.min[0]+bounds.max[0])/2, (bounds.min[1]+bounds.max[1])/2, (bounds.min[2]+bounds.max[2])/2];
+  const span = Math.max(bounds.max[0]-bounds.min[0], bounds.max[1]-bounds.min[1], bounds.max[2]-bounds.min[2]);
+  const d = span * 1.7;
+  const views = {
+    iso:    { yaw: -1.15, pitch: 0.42 },
+    plan:   { yaw: -Math.PI / 2, pitch: 1.5533 },
+    front:  { yaw: -Math.PI / 2, pitch: 0.12 },
+    back:   { yaw: Math.PI / 2, pitch: 0.12 },
+    layout: { yaw: -Math.PI / 2, pitch: 1.5533, hide: ["roof"], show: ["rooms"] },
+  };
+  const v = views[view] || views.iso;
+  cam = { target: c, dist: d * (v.zoom || 1), yaw: v.yaw, pitch: v.pitch };
+  if (v.hide || v.show) {
+    for (const l of LAYERS) {
+      if (v.hide && v.hide.includes(l.key)) l.on = false;
+      if (v.show && v.show.includes(l.key)) l.on = true;
+    }
+    syncBoxes();
+  }
+}
+
+function draw() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = Math.floor(canvas.clientWidth * dpr), h = Math.floor(canvas.clientHeight * dpr);
+  if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+  gl.viewport(0, 0, w, h);
+
+  const bg = getComputedStyle(document.body).getPropertyValue("--sky").trim();
+  const c = bg.match(/^#([0-9a-f]{6})$/i);
+  if (c) {
+    const v = parseInt(c[1], 16);
+    gl.clearColor(((v >> 16) & 255) / 255, ((v >> 8) & 255) / 255, (v & 255) / 255, 1);
+  } else gl.clearColor(0.88, 0.90, 0.93, 1);
+  gl.enable(gl.DEPTH_TEST);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+  const cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
+  const eye = [
+    cam.target[0] + cam.dist * cp * Math.cos(cam.yaw),
+    cam.target[1] + cam.dist * cp * Math.sin(cam.yaw),
+    cam.target[2] + cam.dist * sp,
+  ];
+  const proj = perspective(0.72, w / h, cam.dist * 0.02, cam.dist * 12);
+  const vp = mulCM(proj, lookAt(eye, cam.target, [0, 0, 1]));
+  gl.uniformMatrix4fv(uVP, false, new Float32Array(vp));
+  placeLabels(vp);
+
+  const paint = (layer) => {
+    const b = buffers[layer.key];
+    if (!b || !layer.on) return;
+    gl.uniform1f(uAlpha, layer.alpha || 1);
+    for (const [loc, buf] of [[aPos, b.pos], [aNrm, b.nrm], [aCol, b.col]]) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.enableVertexAttribArray(loc);
+      gl.vertexAttribPointer(loc, 3, gl.FLOAT, false, 0, 0);
+    }
+    gl.drawArrays(gl.TRIANGLES, 0, b.n);
+  };
+
+  gl.disable(gl.BLEND);
+  gl.depthMask(true);
+  for (const l of LAYERS) if (!l.alpha) paint(l);
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  gl.depthMask(false);
+  for (const l of LAYERS) if (l.alpha) paint(l);
+  gl.depthMask(true);
+
+  requestAnimationFrame(draw);
+}
+
+function placeLabels(vp) {
+  const on = LAYERS.find(l => l.key === "rooms").on;
+  const W = canvas.clientWidth, H = canvas.clientHeight;
+  for (const l of labels) {
+    if (!l.el) continue;
+    if (!on) { l.el.style.display = "none"; continue; }
+    const p = l.at;
+    const cw = vp[3]*p[0] + vp[7]*p[1] + vp[11]*p[2] + vp[15];
+    if (cw <= 0) { l.el.style.display = "none"; continue; }
+    const cx = (vp[0]*p[0] + vp[4]*p[1] + vp[8]*p[2] + vp[12]) / cw;
+    const cy = (vp[1]*p[0] + vp[5]*p[1] + vp[9]*p[2] + vp[13]) / cw;
+    l.el.style.display = "";
+    l.el.style.left = ((cx * 0.5 + 0.5) * W) + "px";
+    l.el.style.top = ((1 - (cy * 0.5 + 0.5)) * H) + "px";
+  }
+}
+
+const boxes = new Map();
+function syncBoxes() {
+  for (const [key, cb] of boxes) cb.checked = LAYERS.find(l => l.key === key).on;
+}
+
+function ui(counts) {
+  const box = document.getElementById("layers");
+  for (const l of LAYERS) {
+    if (!meshes[l.key].pos.length) continue;
+    const label = document.createElement("label");
+    const cb = document.createElement("input");
+    cb.type = "checkbox"; cb.checked = l.on;
+    cb.onchange = () => { l.on = cb.checked; };
+    boxes.set(l.key, cb);
+    const sw = document.createElement("span");
+    sw.className = "sw";
+    sw.style.background = `rgb(${l.color.map(v => Math.round(v * 255)).join(",")})`;
+    label.append(cb, sw, document.createTextNode(l.name));
+    box.append(label);
+  }
+  for (const b of document.querySelectorAll("[data-view]")) {
+    b.onclick = () => { location.hash = b.dataset.view; frame(b.dataset.view); };
+  }
+  window.addEventListener("hashchange", () => frame(location.hash.slice(1)));
+
+  const host = document.getElementById("labels");
+  for (const l of labels) {
+    l.el = document.createElement("span");
+    l.el.className = "lbl";
+    l.el.textContent = l.text;
+    host.append(l.el);
+  }
+  const m = [
+    (bounds.max[0] - bounds.min[0]) / 1000,
+    (bounds.max[1] - bounds.min[1]) / 1000,
+    (bounds.max[2] - bounds.min[2]) / 1000,
+  ];
+  document.getElementById("stats").textContent =
+    `${m[0].toFixed(2)} × ${m[1].toFixed(2)} m, ridge ${m[2].toFixed(2)} m · ` +
+    `${counts.windows} windows, ${counts.doors} doors`;
+}
+
+function pointer() {
+  let drag = null;
+  canvas.addEventListener("contextmenu", e => e.preventDefault());
+  canvas.addEventListener("pointerdown", e => {
+    canvas.setPointerCapture(e.pointerId);
+    drag = { x: e.clientX, y: e.clientY, pan: e.shiftKey || e.button !== 0 };
+  });
+  canvas.addEventListener("pointerup", () => { drag = null; });
+  canvas.addEventListener("pointermove", e => {
+    if (!drag) return;
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    drag.x = e.clientX; drag.y = e.clientY;
+    if (drag.pan) {
+      const right = [-Math.sin(cam.yaw), Math.cos(cam.yaw), 0];
+      const upv = [
+        -Math.sin(cam.pitch) * Math.cos(cam.yaw),
+        -Math.sin(cam.pitch) * Math.sin(cam.yaw),
+        Math.cos(cam.pitch),
+      ];
+      const k = cam.dist * 0.0016;
+      for (let i = 0; i < 3; i++) cam.target[i] += (-dx * right[i] + dy * upv[i]) * k;
+    } else {
+      cam.yaw -= dx * 0.008;
+      cam.pitch = Math.max(-1.5, Math.min(1.5533, cam.pitch + dy * 0.006));
+    }
+  });
+  canvas.addEventListener("wheel", e => {
+    e.preventDefault();
+    cam.dist = Math.max(500, Math.min(400000, cam.dist * Math.exp(e.deltaY * 0.0012)));
+  }, { passive: false });
+}
+
+try {
+  parse(document.getElementById("model").textContent);
+  const counts = build();
+  bounds = boundsOf();
+  addSite(bounds);
+  for (const l of LAYERS) buffers[l.key] = upload(meshes[l.key]);
+  frame(location.hash.slice(1) || "iso");
+  ui(counts);
+  pointer();
+  draw();
+} catch (err) {
+  document.getElementById("gl").style.display = "none";
+  const p = document.createElement("pre");
+  p.id = "err";
+  p.textContent = "Could not build the model:\n\n" + (err && err.stack ? err.stack : err);
+  document.body.append(p);
+}
+
+})();
+</script>
