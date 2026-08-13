@@ -12,6 +12,87 @@ open cottage.html
 Also written: `cottage.fragment.html`, the same viewer as a document body only,
 for publishing to a host that supplies its own `<head>`.
 
+## How it works
+
+Go is a **generator**, not a runtime. It runs once, at authoring time, and then
+it is out of the picture.
+
+```
+  authoring time, in Go                        │  afterwards, in a browser
+                                               │
+  params.go        build.go        spf.go      │
+  ┌─────────┐     ┌─────────┐     ┌─────────┐  │
+  │ Params  │────►│ builder │────►│  File   │──┼──► cottage.ifc ──► BIM tools,
+  │  data   │     │ entities│     │  STEP   │  │                    mbaigo
+  └─────────┘     └─────────┘     └─────────┘  │
+                                       │       │
+                       viewer.html ◄───┘       │
+                            │  the STEP text is│
+                            │  pasted into a   │      ┌──────────────────┐
+                            ▼  <script> tag    │      │ read the <script>│
+                       cottage.html ───────────┼─────►│ parse STEP       │
+                                               │      │ placements       │
+                                               │      │ profiles → prisms│
+                                               │      │ triangles → WebGL│
+                                               │      └──────────────────┘
+```
+
+Four steps:
+
+1. **`params.go` holds the building as plain data** — a `Params` value listing
+   walls, openings, rooms and fittings as numbers.
+2. **`build.go` turns that into IFC entities** — walls become `IfcWall` with a
+   swept solid, openings become `IfcOpeningElement` plus the relationships that
+   void the wall and fill the hole, and so on.
+3. **`spf.go` writes those entities out as STEP text.** That is `cottage.ifc`,
+   and it is the file any BIM tool or mbaigo system reads.
+4. **`viewer.go` pastes that same STEP text into `viewer.html`** at a
+   placeholder, producing `cottage.html`.
+
+## Is Go needed afterwards?
+
+**No.** `cottage.html` is a single 77 KB file carrying three things at once: the
+model, a reader for it and a renderer. Open it by double-clicking, with no
+server, no network and no toolchain, on a machine that has never heard of Go.
+Mail it to someone and it works for them too.
+
+That is why the viewer parses the IFC in the page rather than being handed a
+pile of triangles. The page is not a picture of the model — it contains the
+model, and rebuilds the geometry every time it loads. Deleting every `.go` file
+in this repository would not change what `cottage.html` does.
+
+What the browser does on load: split the STEP text into an entity table, walk
+each product's `IfcLocalPlacement` chain into a 4×4 matrix, turn each profile
+into a polygon, sweep it into a prism, subtract the openings, triangulate, and
+hand the result to WebGL. It understands about twenty IFC entity types — the
+ones this generator emits — and nothing else.
+
+## Generating another building
+
+Most of the model is already data. These are lists in `Params`, and a different
+building is a different list, with no Go to change:
+
+| | |
+|---|---|
+| `Walls` | any straight segment, with its own thickness and height |
+| `Openings` | windows and doors, positioned along a named wall |
+| `Spaces` | rooms as polygons |
+| `Fittings` | appliances, heaters, sockets, sensors |
+
+Two functions in `build.go` are still written for *this* building and would need
+generalising for another:
+
+- `outline` (11 lines) computes the L-shaped footprint from four dimensions.
+  A different plan needs a different polygon.
+- `roof` (79 lines) builds the specific pair of roofs here — a hip over the base
+  leg, a gable over the rise.
+
+Everything else — the whole `internal/ifc` package, the viewer, and the walls,
+openings, spaces and fittings code — is indifferent to which building it is
+describing. So today: **write a new `Params` value, plus a footprint and a roof.**
+Lifting those last two into `Params` as a polygon and a list of roof shapes
+would make it data all the way down.
+
 ## Layout
 
 ```
