@@ -72,6 +72,7 @@
     <button data-view="front">Front</button>
     <button data-view="back">Back</button>
     <button data-view="layout">Layout</button>
+    <button data-view="site">Site</button>
   </div>
   <p id="hint">Drag to orbit · shift-drag or right-drag to pan · scroll to zoom</p>
 </aside>
@@ -87,7 +88,7 @@ DATA;
 #2=IFCORGANIZATION($,'Luleå University of Technology',$,$,$);
 #3=IFCPERSONANDORGANIZATION(#1,#2,$);
 #4=IFCAPPLICATION(#2,'0.1','ifcgen','ifcgen');
-#5=IFCOWNERHISTORY(#3,#4,$,.ADDED.,$,$,$,1786492800);
+#5=IFCOWNERHISTORY(#3,#4,$,.NOCHANGE.,$,$,$,1786492800);
 #6=IFCSIUNIT(*,.LENGTHUNIT.,.MILLI.,.METRE.);
 #7=IFCSIUNIT(*,.AREAUNIT.,$,.SQUARE_METRE.);
 #8=IFCSIUNIT(*,.VOLUMEUNIT.,$,.CUBIC_METRE.);
@@ -656,64 +657,370 @@ DATA;
 #571=IFCSHAPEREPRESENTATION(#15,'Body','SweptSolid',(#567));
 #572=IFCPRODUCTDEFINITIONSHAPE($,$,(#571));
 #573=IFCWALL('2img9d4rixPieKQAp$z4_i',#5,'Rise gable',$,$,#570,#572,$,.SOLIDWALL.);
-#574=IFCRELCONTAINEDINSPATIALSTRUCTURE('1aNmgGcdIG3Ch2tBiOpBUS',#5,$,$,(#47,#62,#77,#92,#107,#122,#137,#152,#167,#182,#197,#212,#227,#254,#282,#310,#338,#366,#394,#422,#450,#478,#506,#536,#556,#573),#26);
-#575=IFCCARTESIANPOINT((2397.5,6517.5));
-#576=IFCCARTESIANPOINT((4992.5,6517.5));
-#577=IFCCARTESIANPOINT((4992.5,8600.));
-#578=IFCCARTESIANPOINT((2397.5,8600.));
-#579=IFCPOLYLINE((#575,#576,#577,#578,#575));
-#580=IFCARBITRARYCLOSEDPROFILEDEF(.AREA.,'Bedroom',#579);
-#581=IFCCARTESIANPOINT((0.,0.,0.));
-#582=IFCAXIS2PLACEMENT3D(#581,$,$);
-#583=IFCDIRECTION((0.,0.,1.));
-#584=IFCEXTRUDEDAREASOLID(#580,#582,#583,2200.);
-#585=IFCCARTESIANPOINT((0.,0.,0.));
-#586=IFCAXIS2PLACEMENT3D(#585,$,$);
-#587=IFCLOCALPLACEMENT(#25,#586);
-#588=IFCSHAPEREPRESENTATION(#15,'Body','SweptSolid',(#584));
-#589=IFCPRODUCTDEFINITIONSHAPE($,$,(#588));
-#590=IFCSPACE('1WolMsTTOxgH8jOQxaOSpY',#5,'Bedroom',$,$,#587,#589,'Bedroom',.ELEMENT.,.SPACE.,0.);
-#591=IFCCARTESIANPOINT((6087.5,7147.5));
-#592=IFCCARTESIANPOINT((7940.,7147.5));
-#593=IFCCARTESIANPOINT((7940.,8600.));
-#594=IFCCARTESIANPOINT((6087.5,8600.));
-#595=IFCPOLYLINE((#591,#592,#593,#594,#591));
-#596=IFCARBITRARYCLOSEDPROFILEDEF(.AREA.,'Bathroom',#595);
-#597=IFCCARTESIANPOINT((0.,0.,0.));
-#598=IFCAXIS2PLACEMENT3D(#597,$,$);
-#599=IFCDIRECTION((0.,0.,1.));
-#600=IFCEXTRUDEDAREASOLID(#596,#598,#599,2200.);
-#601=IFCCARTESIANPOINT((0.,0.,0.));
-#602=IFCAXIS2PLACEMENT3D(#601,$,$);
-#603=IFCLOCALPLACEMENT(#25,#602);
-#604=IFCSHAPEREPRESENTATION(#15,'Body','SweptSolid',(#600));
-#605=IFCPRODUCTDEFINITIONSHAPE($,$,(#604));
-#606=IFCSPACE('3Ku0xXoV$PR9jlVvMw9yFe',#5,'Bathroom',$,$,#603,#605,'Bathroom',.ELEMENT.,.SPACE.,0.);
-#607=IFCCARTESIANPOINT((0.,4190.));
-#608=IFCCARTESIANPOINT((4340.,4190.));
-#609=IFCCARTESIANPOINT((4340.,0.));
-#610=IFCCARTESIANPOINT((7940.,0.));
-#611=IFCCARTESIANPOINT((7940.,7052.5));
-#612=IFCCARTESIANPOINT((5992.5,7052.5));
-#613=IFCCARTESIANPOINT((5992.5,8600.));
-#614=IFCCARTESIANPOINT((5087.5,8600.));
-#615=IFCCARTESIANPOINT((5087.5,6422.5));
-#616=IFCCARTESIANPOINT((2302.5,6422.5));
-#617=IFCCARTESIANPOINT((2302.5,8600.));
-#618=IFCCARTESIANPOINT((0.,8600.));
-#619=IFCPOLYLINE((#607,#608,#609,#610,#611,#612,#613,#614,#615,#616,#617,#618,#607));
-#620=IFCARBITRARYCLOSEDPROFILEDEF(.AREA.,'Living',#619);
-#621=IFCCARTESIANPOINT((0.,0.,0.));
-#622=IFCAXIS2PLACEMENT3D(#621,$,$);
-#623=IFCDIRECTION((0.,0.,1.));
-#624=IFCEXTRUDEDAREASOLID(#620,#622,#623,2200.);
-#625=IFCCARTESIANPOINT((0.,0.,0.));
-#626=IFCAXIS2PLACEMENT3D(#625,$,$);
-#627=IFCLOCALPLACEMENT(#25,#626);
-#628=IFCSHAPEREPRESENTATION(#15,'Body','SweptSolid',(#624));
-#629=IFCPRODUCTDEFINITIONSHAPE($,$,(#628));
-#630=IFCSPACE('3h6$3R33ye$kqziK0VEzg7',#5,'Living',$,$,#627,#629,'Kitchen / dining / living',.ELEMENT.,.SPACE.,0.);
-#631=IFCRELAGGREGATES('1ERgVgmzYC$WAxgk3nNN2Q',#5,$,$,#26,(#590,#606,#630));
+#574=IFCCARTESIANPOINT((0.,0.));
+#575=IFCAXIS2PLACEMENT2D(#574,$);
+#576=IFCRECTANGLEPROFILEDEF(.AREA.,'Kitchen worktop (back wall)',#575,2302.5,600.);
+#577=IFCCARTESIANPOINT((0.,0.,0.));
+#578=IFCAXIS2PLACEMENT3D(#577,$,$);
+#579=IFCDIRECTION((0.,0.,1.));
+#580=IFCEXTRUDEDAREASOLID(#576,#578,#579,900.);
+#581=IFCSHAPEREPRESENTATION(#15,'Body','SweptSolid',(#580));
+#582=IFCPRODUCTDEFINITIONSHAPE($,$,(#581));
+#583=IFCCARTESIANPOINT((1151.25,8300.,0.));
+#584=IFCAXIS2PLACEMENT3D(#583,$,$);
+#585=IFCLOCALPLACEMENT(#25,#584);
+#586=IFCFURNISHINGELEMENT('1B48B9CY37EjuwTDPWCsax',#5,'Kitchen worktop (back wall)',$,$,#585,#582,$);
+#587=IFCCARTESIANPOINT((0.,0.));
+#588=IFCAXIS2PLACEMENT2D(#587,$);
+#589=IFCRECTANGLEPROFILEDEF(.AREA.,'Kitchen worktop (west wall)',#588,600.,1400.);
+#590=IFCCARTESIANPOINT((0.,0.,0.));
+#591=IFCAXIS2PLACEMENT3D(#590,$,$);
+#592=IFCDIRECTION((0.,0.,1.));
+#593=IFCEXTRUDEDAREASOLID(#589,#591,#592,900.);
+#594=IFCSHAPEREPRESENTATION(#15,'Body','SweptSolid',(#593));
+#595=IFCPRODUCTDEFINITIONSHAPE($,$,(#594));
+#596=IFCCARTESIANPOINT((300.,7900.,0.));
+#597=IFCAXIS2PLACEMENT3D(#596,$,$);
+#598=IFCLOCALPLACEMENT(#25,#597);
+#599=IFCFURNISHINGELEMENT('3NdV9knk8KuCkIOV1HQI3$',#5,'Kitchen worktop (west wall)',$,$,#598,#595,$);
+#600=IFCCARTESIANPOINT((0.,0.));
+#601=IFCAXIS2PLACEMENT2D(#600,$);
+#602=IFCRECTANGLEPROFILEDEF(.AREA.,'Sink',#601,800.,480.);
+#603=IFCCARTESIANPOINT((0.,0.,0.));
+#604=IFCAXIS2PLACEMENT3D(#603,$,$);
+#605=IFCDIRECTION((0.,0.,1.));
+#606=IFCEXTRUDEDAREASOLID(#602,#604,#605,80.);
+#607=IFCSHAPEREPRESENTATION(#15,'Body','SweptSolid',(#606));
+#608=IFCPRODUCTDEFINITIONSHAPE($,$,(#607));
+#609=IFCCARTESIANPOINT((1175.,8300.,820.));
+#610=IFCAXIS2PLACEMENT3D(#609,$,$);
+#611=IFCLOCALPLACEMENT(#25,#610);
+#612=IFCSANITARYTERMINAL('1A0YhmxnkoX1x$Od$7Zkdt',#5,'Sink',$,$,#611,#608,$,.SINK.);
+#613=IFCCARTESIANPOINT((0.,0.));
+#614=IFCAXIS2PLACEMENT2D(#613,$);
+#615=IFCRECTANGLEPROFILEDEF(.AREA.,'Cooker',#614,600.,600.);
+#616=IFCCARTESIANPOINT((0.,0.,0.));
+#617=IFCAXIS2PLACEMENT3D(#616,$,$);
+#618=IFCDIRECTION((0.,0.,1.));
+#619=IFCEXTRUDEDAREASOLID(#615,#617,#618,900.);
+#620=IFCSHAPEREPRESENTATION(#15,'Body','SweptSolid',(#619));
+#621=IFCPRODUCTDEFINITIONSHAPE($,$,(#620));
+#622=IFCCARTESIANPOINT((300.,6900.,0.));
+#623=IFCAXIS2PLACEMENT3D(#622,$,$);
+#624=IFCLOCALPLACEMENT(#25,#623);
+#625=IFCELECTRICAPPLIANCE('3VhTsxpaNaG5FYxzGA7pXB',#5,'Cooker',$,$,#624,#621,$,.ELECTRICCOOKER.);
+#626=IFCCARTESIANPOINT((0.,0.));
+#627=IFCAXIS2PLACEMENT2D(#626,$);
+#628=IFCRECTANGLEPROFILEDEF(.AREA.,'Fridge',#627,600.,600.);
+#629=IFCCARTESIANPOINT((0.,0.,0.));
+#630=IFCAXIS2PLACEMENT3D(#629,$,$);
+#631=IFCDIRECTION((0.,0.,1.));
+#632=IFCEXTRUDEDAREASOLID(#628,#630,#631,1900.);
+#633=IFCSHAPEREPRESENTATION(#15,'Body','SweptSolid',(#632));
+#634=IFCPRODUCTDEFINITIONSHAPE($,$,(#633));
+#635=IFCCARTESIANPOINT((300.,6300.,0.));
+#636=IFCAXIS2PLACEMENT3D(#635,$,$);
+#637=IFCLOCALPLACEMENT(#25,#636);
+#638=IFCELECTRICAPPLIANCE('2mPoLgI_oIPvQ44dKqLmyL',#5,'Fridge',$,$,#637,#634,$,.REFRIGERATOR.);
+#639=IFCPROPERTYSINGLEVALUE('Note',$,IFCTEXT('Full height; should finish level with the bedroom wall'),$);
+#640=IFCPROPERTYSET('1ycwAm9ErbNvX0UBsdF$4E',#5,'Pset_Mbaigo_Fitting',$,(#639));
+#641=IFCRELDEFINESBYPROPERTIES('0YGvWQCwFq4lrIcWCMpWYT',#5,$,$,(#638),#640);
+#642=IFCCARTESIANPOINT((0.,0.));
+#643=IFCAXIS2PLACEMENT2D(#642,$);
+#644=IFCRECTANGLEPROFILEDEF(.AREA.,'Heater, kitchen',#643,1000.,110.);
+#645=IFCCARTESIANPOINT((0.,0.,0.));
+#646=IFCAXIS2PLACEMENT3D(#645,$,$);
+#647=IFCDIRECTION((0.,0.,1.));
+#648=IFCEXTRUDEDAREASOLID(#644,#646,#647,400.);
+#649=IFCSHAPEREPRESENTATION(#15,'Body','SweptSolid',(#648));
+#650=IFCPRODUCTDEFINITIONSHAPE($,$,(#649));
+#651=IFCCARTESIANPOINT((1250.,4245.,150.));
+#652=IFCAXIS2PLACEMENT3D(#651,$,$);
+#653=IFCLOCALPLACEMENT(#25,#652);
+#654=IFCSPACEHEATER('3Y5XgJhSzGL_XiTyBq12zQ',#5,'Heater, kitchen',$,$,#653,#650,$,.CONVECTOR.);
+#655=IFCPROPERTYSINGLEVALUE('MbaigoSystem',$,IFCLABEL('BeeKeeper'),$);
+#656=IFCPROPERTYSINGLEVALUE('NominalPower',$,IFCPOWERMEASURE(2000.),$);
+#657=IFCPROPERTYSINGLEVALUE('SwitchedBy',$,IFCLABEL('Aqara smart plug'),$);
+#658=IFCPROPERTYSINGLEVALUE('Note',$,IFCTEXT('Under the kitchen window beside the entrance'),$);
+#659=IFCPROPERTYSET('28U5renWvOzwklj$Cn0OgF',#5,'Pset_Mbaigo_BeeKeeper',$,(#655,#656,#657,#658));
+#660=IFCRELDEFINESBYPROPERTIES('2E5YZ9a5HLAauA5eMcEN1t',#5,$,$,(#654),#659);
+#661=IFCCARTESIANPOINT((0.,0.));
+#662=IFCAXIS2PLACEMENT2D(#661,$);
+#663=IFCRECTANGLEPROFILEDEF(.AREA.,'Plug, kitchen heater',#662,70.,45.);
+#664=IFCCARTESIANPOINT((0.,0.,0.));
+#665=IFCAXIS2PLACEMENT3D(#664,$,$);
+#666=IFCDIRECTION((0.,0.,1.));
+#667=IFCEXTRUDEDAREASOLID(#663,#665,#666,110.);
+#668=IFCSHAPEREPRESENTATION(#15,'Body','SweptSolid',(#667));
+#669=IFCPRODUCTDEFINITIONSHAPE($,$,(#668));
+#670=IFCCARTESIANPOINT((1985.,4212.5,200.));
+#671=IFCAXIS2PLACEMENT3D(#670,$,$);
+#672=IFCLOCALPLACEMENT(#25,#671);
+#673=IFCOUTLET('0kLyU0NRsxxGyxPRyFr6c4',#5,'Plug, kitchen heater',$,$,#672,#669,$,.POWEROUTLET.);
+#674=IFCPROPERTYSINGLEVALUE('MbaigoSystem',$,IFCLABEL('BeeKeeper'),$);
+#675=IFCPROPERTYSINGLEVALUE('DeviceType',$,IFCLABEL('Aqara smart plug'),$);
+#676=IFCPROPERTYSET('31R6s62RUrOcr4QvRDU2o4',#5,'Pset_Mbaigo_BeeKeeper',$,(#674,#675));
+#677=IFCRELDEFINESBYPROPERTIES('0_27cEJSUWwBLT7ygQW1mv',#5,$,$,(#673),#676);
+#678=IFCCARTESIANPOINT((0.,0.));
+#679=IFCAXIS2PLACEMENT2D(#678,$);
+#680=IFCRECTANGLEPROFILEDEF(.AREA.,'Heater, living west',#679,110.,1000.);
+#681=IFCCARTESIANPOINT((0.,0.,0.));
+#682=IFCAXIS2PLACEMENT3D(#681,$,$);
+#683=IFCDIRECTION((0.,0.,1.));
+#684=IFCEXTRUDEDAREASOLID(#680,#682,#683,400.);
+#685=IFCSHAPEREPRESENTATION(#15,'Body','SweptSolid',(#684));
+#686=IFCPRODUCTDEFINITIONSHAPE($,$,(#685));
+#687=IFCCARTESIANPOINT((4395.,2095.,150.));
+#688=IFCAXIS2PLACEMENT3D(#687,$,$);
+#689=IFCLOCALPLACEMENT(#25,#688);
+#690=IFCSPACEHEATER('0Z1oQk0Tfe6BlcQETimvQP',#5,'Heater, living west',$,$,#689,#686,$,.CONVECTOR.);
+#691=IFCPROPERTYSINGLEVALUE('MbaigoSystem',$,IFCLABEL('BeeKeeper'),$);
+#692=IFCPROPERTYSINGLEVALUE('NominalPower',$,IFCPOWERMEASURE(2000.),$);
+#693=IFCPROPERTYSINGLEVALUE('SwitchedBy',$,IFCLABEL('Aqara smart plug'),$);
+#694=IFCPROPERTYSINGLEVALUE('Note',$,IFCTEXT('Under the window on the far side of the entrance'),$);
+#695=IFCPROPERTYSET('1_gXRg1iyMnoSeF$SN53cz',#5,'Pset_Mbaigo_BeeKeeper',$,(#691,#692,#693,#694));
+#696=IFCRELDEFINESBYPROPERTIES('1AVo1CLMcpPHgzcIlyM_J2',#5,$,$,(#690),#695);
+#697=IFCCARTESIANPOINT((0.,0.));
+#698=IFCAXIS2PLACEMENT2D(#697,$);
+#699=IFCRECTANGLEPROFILEDEF(.AREA.,'Plug, living west heater',#698,45.,70.);
+#700=IFCCARTESIANPOINT((0.,0.,0.));
+#701=IFCAXIS2PLACEMENT3D(#700,$,$);
+#702=IFCDIRECTION((0.,0.,1.));
+#703=IFCEXTRUDEDAREASOLID(#699,#701,#702,110.);
+#704=IFCSHAPEREPRESENTATION(#15,'Body','SweptSolid',(#703));
+#705=IFCPRODUCTDEFINITIONSHAPE($,$,(#704));
+#706=IFCCARTESIANPOINT((4362.5,2830.,200.));
+#707=IFCAXIS2PLACEMENT3D(#706,$,$);
+#708=IFCLOCALPLACEMENT(#25,#707);
+#709=IFCOUTLET('3sJlA8CUlQzk3nuE8p1BJR',#5,'Plug, living west heater',$,$,#708,#705,$,.POWEROUTLET.);
+#710=IFCPROPERTYSINGLEVALUE('MbaigoSystem',$,IFCLABEL('BeeKeeper'),$);
+#711=IFCPROPERTYSINGLEVALUE('DeviceType',$,IFCLABEL('Aqara smart plug'),$);
+#712=IFCPROPERTYSET('3PBt9e0jBewR8opo5daq07',#5,'Pset_Mbaigo_BeeKeeper',$,(#710,#711));
+#713=IFCRELDEFINESBYPROPERTIES('3_z2UGetLB9UHSZd0$nihk',#5,$,$,(#709),#712);
+#714=IFCCARTESIANPOINT((0.,0.));
+#715=IFCAXIS2PLACEMENT2D(#714,$);
+#716=IFCRECTANGLEPROFILEDEF(.AREA.,'Heater, living east',#715,110.,1000.);
+#717=IFCCARTESIANPOINT((0.,0.,0.));
+#718=IFCAXIS2PLACEMENT3D(#717,$,$);
+#719=IFCDIRECTION((0.,0.,1.));
+#720=IFCEXTRUDEDAREASOLID(#716,#718,#719,400.);
+#721=IFCSHAPEREPRESENTATION(#15,'Body','SweptSolid',(#720));
+#722=IFCPRODUCTDEFINITIONSHAPE($,$,(#721));
+#723=IFCCARTESIANPOINT((7885.,2095.,150.));
+#724=IFCAXIS2PLACEMENT3D(#723,$,$);
+#725=IFCLOCALPLACEMENT(#25,#724);
+#726=IFCSPACEHEATER('0mY0C__ReYxMT4prbNwp7J',#5,'Heater, living east',$,$,#725,#722,$,.CONVECTOR.);
+#727=IFCPROPERTYSINGLEVALUE('MbaigoSystem',$,IFCLABEL('BeeKeeper'),$);
+#728=IFCPROPERTYSINGLEVALUE('NominalPower',$,IFCPOWERMEASURE(2000.),$);
+#729=IFCPROPERTYSINGLEVALUE('SwitchedBy',$,IFCLABEL('Aqara smart plug'),$);
+#730=IFCPROPERTYSINGLEVALUE('Note',$,IFCTEXT('Under the window on the rise''s other side'),$);
+#731=IFCPROPERTYSET('1hw2TA3K2sHPx2_K5FRrtz',#5,'Pset_Mbaigo_BeeKeeper',$,(#727,#728,#729,#730));
+#732=IFCRELDEFINESBYPROPERTIES('3Aob8p$WslkHlF1f4Cw3sP',#5,$,$,(#726),#731);
+#733=IFCCARTESIANPOINT((0.,0.));
+#734=IFCAXIS2PLACEMENT2D(#733,$);
+#735=IFCRECTANGLEPROFILEDEF(.AREA.,'Plug, living east heater',#734,45.,70.);
+#736=IFCCARTESIANPOINT((0.,0.,0.));
+#737=IFCAXIS2PLACEMENT3D(#736,$,$);
+#738=IFCDIRECTION((0.,0.,1.));
+#739=IFCEXTRUDEDAREASOLID(#735,#737,#738,110.);
+#740=IFCSHAPEREPRESENTATION(#15,'Body','SweptSolid',(#739));
+#741=IFCPRODUCTDEFINITIONSHAPE($,$,(#740));
+#742=IFCCARTESIANPOINT((7917.5,2830.,200.));
+#743=IFCAXIS2PLACEMENT3D(#742,$,$);
+#744=IFCLOCALPLACEMENT(#25,#743);
+#745=IFCOUTLET('0x$j_PQ7DvIgJOqDLt$PND',#5,'Plug, living east heater',$,$,#744,#741,$,.POWEROUTLET.);
+#746=IFCPROPERTYSINGLEVALUE('MbaigoSystem',$,IFCLABEL('BeeKeeper'),$);
+#747=IFCPROPERTYSINGLEVALUE('DeviceType',$,IFCLABEL('Aqara smart plug'),$);
+#748=IFCPROPERTYSET('2NWpP$cYqD0_bYOF6bd7wM',#5,'Pset_Mbaigo_BeeKeeper',$,(#746,#747));
+#749=IFCRELDEFINESBYPROPERTIES('3T2wNmM8qknuxr6kFg6SAz',#5,$,$,(#745),#748);
+#750=IFCCARTESIANPOINT((0.,0.));
+#751=IFCAXIS2PLACEMENT2D(#750,$);
+#752=IFCRECTANGLEPROFILEDEF(.AREA.,'Heater, bathroom',#751,600.,110.);
+#753=IFCCARTESIANPOINT((0.,0.,0.));
+#754=IFCAXIS2PLACEMENT3D(#753,$,$);
+#755=IFCDIRECTION((0.,0.,1.));
+#756=IFCEXTRUDEDAREASOLID(#752,#754,#755,400.);
+#757=IFCSHAPEREPRESENTATION(#15,'Body','SweptSolid',(#756));
+#758=IFCPRODUCTDEFINITIONSHAPE($,$,(#757));
+#759=IFCCARTESIANPOINT((6990.,7202.5,150.));
+#760=IFCAXIS2PLACEMENT3D(#759,$,$);
+#761=IFCLOCALPLACEMENT(#25,#760);
+#762=IFCSPACEHEATER('00rRd4hB4LJxqvzyZFGBNX',#5,'Heater, bathroom',$,$,#761,#758,$,.CONVECTOR.);
+#763=IFCPROPERTYSINGLEVALUE('MbaigoSystem',$,IFCLABEL('BeeKeeper'),$);
+#764=IFCPROPERTYSINGLEVALUE('NominalPower',$,IFCPOWERMEASURE(1000.),$);
+#765=IFCPROPERTYSINGLEVALUE('SwitchedBy',$,IFCLABEL('Aqara smart plug'),$);
+#766=IFCPROPERTYSINGLEVALUE('Note',$,IFCTEXT('On the wall opposite the bathroom window'),$);
+#767=IFCPROPERTYSET('09bjWb6REsu5rGwJmY_304',#5,'Pset_Mbaigo_BeeKeeper',$,(#763,#764,#765,#766));
+#768=IFCRELDEFINESBYPROPERTIES('1Gk4FtqtkD6FgSpRSP7vSJ',#5,$,$,(#762),#767);
+#769=IFCCARTESIANPOINT((0.,0.));
+#770=IFCAXIS2PLACEMENT2D(#769,$);
+#771=IFCRECTANGLEPROFILEDEF(.AREA.,'Plug, bathroom heater',#770,70.,45.);
+#772=IFCCARTESIANPOINT((0.,0.,0.));
+#773=IFCAXIS2PLACEMENT3D(#772,$,$);
+#774=IFCDIRECTION((0.,0.,1.));
+#775=IFCEXTRUDEDAREASOLID(#771,#773,#774,110.);
+#776=IFCSHAPEREPRESENTATION(#15,'Body','SweptSolid',(#775));
+#777=IFCPRODUCTDEFINITIONSHAPE($,$,(#776));
+#778=IFCCARTESIANPOINT((7455.,7170.,200.));
+#779=IFCAXIS2PLACEMENT3D(#778,$,$);
+#780=IFCLOCALPLACEMENT(#25,#779);
+#781=IFCOUTLET('17Q9ydsRULzHxP5YKlnOwI',#5,'Plug, bathroom heater',$,$,#780,#777,$,.POWEROUTLET.);
+#782=IFCPROPERTYSINGLEVALUE('MbaigoSystem',$,IFCLABEL('BeeKeeper'),$);
+#783=IFCPROPERTYSINGLEVALUE('DeviceType',$,IFCLABEL('Aqara smart plug'),$);
+#784=IFCPROPERTYSET('1evF7okF_k0b0LPpwF9Fl6',#5,'Pset_Mbaigo_BeeKeeper',$,(#782,#783));
+#785=IFCRELDEFINESBYPROPERTIES('0ovUFygehOJw$u$M5JIP5n',#5,$,$,(#781),#784);
+#786=IFCCARTESIANPOINT((0.,0.));
+#787=IFCAXIS2PLACEMENT2D(#786,$);
+#788=IFCRECTANGLEPROFILEDEF(.AREA.,'NetAtmo base module',#787,60.,60.);
+#789=IFCCARTESIANPOINT((0.,0.,0.));
+#790=IFCAXIS2PLACEMENT3D(#789,$,$);
+#791=IFCDIRECTION((0.,0.,1.));
+#792=IFCEXTRUDEDAREASOLID(#788,#790,#791,150.);
+#793=IFCSHAPEREPRESENTATION(#15,'Body','SweptSolid',(#792));
+#794=IFCPRODUCTDEFINITIONSHAPE($,$,(#793));
+#795=IFCCARTESIANPOINT((4370.,2980.,1500.));
+#796=IFCAXIS2PLACEMENT3D(#795,$,$);
+#797=IFCLOCALPLACEMENT(#25,#796);
+#798=IFCSENSOR('0eZM5gNDYXC7zQxTA3SS7g',#5,'NetAtmo base module',$,$,#797,#794,$,.TEMPERATURESENSOR.);
+#799=IFCPROPERTYSINGLEVALUE('MbaigoSystem',$,IFCLABEL('Meteorologue'),$);
+#800=IFCPROPERTYSINGLEVALUE('DeviceType',$,IFCLABEL('NetAtmo module'),$);
+#801=IFCPROPERTYSINGLEVALUE('Note',$,IFCTEXT('Indoor module; position within the living area ASSUMED'),$);
+#802=IFCPROPERTYSET('0FH4MhzxPGJ0x2ce1cxrEI',#5,'Pset_Mbaigo_Meteorologue',$,(#799,#800,#801));
+#803=IFCRELDEFINESBYPROPERTIES('1ZqGb2GsumaI3rOqqYqS5g',#5,$,$,(#798),#802);
+#804=IFCCARTESIANPOINT((0.,0.));
+#805=IFCAXIS2PLACEMENT2D(#804,$);
+#806=IFCRECTANGLEPROFILEDEF(.AREA.,'NetAtmo outdoor module',#805,60.,45.);
+#807=IFCCARTESIANPOINT((0.,0.,0.));
+#808=IFCAXIS2PLACEMENT3D(#807,$,$);
+#809=IFCDIRECTION((0.,0.,1.));
+#810=IFCEXTRUDEDAREASOLID(#806,#808,#809,150.);
+#811=IFCSHAPEREPRESENTATION(#15,'Body','SweptSolid',(#810));
+#812=IFCPRODUCTDEFINITIONSHAPE($,$,(#811));
+#813=IFCCARTESIANPOINT((4000.,8792.5,1800.));
+#814=IFCAXIS2PLACEMENT3D(#813,$,$);
+#815=IFCLOCALPLACEMENT(#25,#814);
+#816=IFCSENSOR('3n4EuHrZvBtnv3m1$RVoYN',#5,'NetAtmo outdoor module',$,$,#815,#812,$,.TEMPERATURESENSOR.);
+#817=IFCPROPERTYSINGLEVALUE('MbaigoSystem',$,IFCLABEL('Meteorologue'),$);
+#818=IFCPROPERTYSINGLEVALUE('DeviceType',$,IFCLABEL('NetAtmo module'),$);
+#819=IFCPROPERTYSINGLEVALUE('Note',$,IFCTEXT('On the north side; height and position along the wall ASSUMED'),$);
+#820=IFCPROPERTYSET('0Gm5sMbSCYR2F3GWvBTWC6',#5,'Pset_Mbaigo_Meteorologue',$,(#817,#818,#819));
+#821=IFCRELDEFINESBYPROPERTIES('26dY9tT_ypj3AhqrBKolQp',#5,$,$,(#816),#820);
+#822=IFCCARTESIANPOINT((0.,0.));
+#823=IFCAXIS2PLACEMENT2D(#822,$);
+#824=IFCRECTANGLEPROFILEDEF(.AREA.,'NetAtmo bathroom module',#823,60.,60.);
+#825=IFCCARTESIANPOINT((0.,0.,0.));
+#826=IFCAXIS2PLACEMENT3D(#825,$,$);
+#827=IFCDIRECTION((0.,0.,1.));
+#828=IFCEXTRUDEDAREASOLID(#824,#826,#827,150.);
+#829=IFCSHAPEREPRESENTATION(#15,'Body','SweptSolid',(#828));
+#830=IFCPRODUCTDEFINITIONSHAPE($,$,(#829));
+#831=IFCCARTESIANPOINT((6117.5,7930.,1600.));
+#832=IFCAXIS2PLACEMENT3D(#831,$,$);
+#833=IFCLOCALPLACEMENT(#25,#832);
+#834=IFCSENSOR('3$JcPSI2OtTkRTWYBjoVQd',#5,'NetAtmo bathroom module',$,$,#833,#830,$,.HUMIDITYSENSOR.);
+#835=IFCPROPERTYSINGLEVALUE('MbaigoSystem',$,IFCLABEL('Meteorologue'),$);
+#836=IFCPROPERTYSINGLEVALUE('DeviceType',$,IFCLABEL('NetAtmo module'),$);
+#837=IFCPROPERTYSINGLEVALUE('Note',$,IFCTEXT('Extra indoor module; position within the bathroom ASSUMED'),$);
+#838=IFCPROPERTYSET('3RvPYGn0MIIBe4tGo7Gaub',#5,'Pset_Mbaigo_Meteorologue',$,(#835,#836,#837));
+#839=IFCRELDEFINESBYPROPERTIES('23Q5$wx7F6qVKysu1r861Q',#5,$,$,(#834),#838);
+#840=IFCCARTESIANPOINT((0.,0.));
+#841=IFCAXIS2PLACEMENT2D(#840,$);
+#842=IFCRECTANGLEPROFILEDEF(.AREA.,'Wind gauge mast',#841,80.,80.);
+#843=IFCCARTESIANPOINT((0.,0.,0.));
+#844=IFCAXIS2PLACEMENT3D(#843,$,$);
+#845=IFCDIRECTION((0.,0.,1.));
+#846=IFCEXTRUDEDAREASOLID(#842,#844,#845,3000.);
+#847=IFCSHAPEREPRESENTATION(#15,'Body','SweptSolid',(#846));
+#848=IFCPRODUCTDEFINITIONSHAPE($,$,(#847));
+#849=IFCCARTESIANPOINT((3970.,-50000.,0.));
+#850=IFCAXIS2PLACEMENT3D(#849,$,$);
+#851=IFCLOCALPLACEMENT(#25,#850);
+#852=IFCFURNISHINGELEMENT('24LasyssjGEZnDVRNGgUyu',#5,'Wind gauge mast',$,$,#851,#848,$);
+#853=IFCPROPERTYSINGLEVALUE('Note',$,IFCTEXT('Mast height ASSUMED'),$);
+#854=IFCPROPERTYSET('120rc8JSTEvniVApcJWzr7',#5,'Pset_Mbaigo_Fitting',$,(#853));
+#855=IFCRELDEFINESBYPROPERTIES('3JKHln_zrYskmNYQPZEH6w',#5,$,$,(#852),#854);
+#856=IFCCARTESIANPOINT((0.,0.));
+#857=IFCAXIS2PLACEMENT2D(#856,$);
+#858=IFCRECTANGLEPROFILEDEF(.AREA.,'NetAtmo wind gauge',#857,150.,150.);
+#859=IFCCARTESIANPOINT((0.,0.,0.));
+#860=IFCAXIS2PLACEMENT3D(#859,$,$);
+#861=IFCDIRECTION((0.,0.,1.));
+#862=IFCEXTRUDEDAREASOLID(#858,#860,#861,150.);
+#863=IFCSHAPEREPRESENTATION(#15,'Body','SweptSolid',(#862));
+#864=IFCPRODUCTDEFINITIONSHAPE($,$,(#863));
+#865=IFCCARTESIANPOINT((3970.,-50000.,3000.));
+#866=IFCAXIS2PLACEMENT3D(#865,$,$);
+#867=IFCLOCALPLACEMENT(#25,#866);
+#868=IFCSENSOR('3rx1J3GUAHiNk2vHUTdA49',#5,'NetAtmo wind gauge',$,$,#867,#864,$,.WINDSENSOR.);
+#869=IFCPROPERTYSINGLEVALUE('MbaigoSystem',$,IFCLABEL('Meteorologue'),$);
+#870=IFCPROPERTYSINGLEVALUE('DeviceType',$,IFCLABEL('NetAtmo module'),$);
+#871=IFCPROPERTYSINGLEVALUE('Note',$,IFCTEXT('50 m in front of the house'),$);
+#872=IFCPROPERTYSET('2QvKSWXVxEj4cHu1BFyoAG',#5,'Pset_Mbaigo_Meteorologue',$,(#869,#870,#871));
+#873=IFCRELDEFINESBYPROPERTIES('0vdUTdPzm1gjqXsKdvf8X4',#5,$,$,(#868),#872);
+#874=IFCSYSTEM('1zoulFTXfm5Oo1nyqSqDlB',#5,'BeeKeeper','mbaigo system switching the heaters through Aqara plugs','mbaigo');
+#875=IFCRELASSIGNSTOGROUP('31CYEySExW5OjZtDbbJB1W',#5,$,$,(#654,#673,#690,#709,#726,#745,#762,#781),$,#874);
+#876=IFCRELSERVICESBUILDINGS('1oLeOJWHSBiX1PnygF6ows',#5,$,$,#874,(#22));
+#877=IFCSYSTEM('3xK4au483teo5L7IyzFcAP',#5,'Meteorologue','mbaigo system reading the NetAtmo weather station','mbaigo');
+#878=IFCRELASSIGNSTOGROUP('2UrGm79qLvnlMnl4_FYcWc',#5,$,$,(#798,#816,#834,#868),$,#877);
+#879=IFCRELSERVICESBUILDINGS('1HnF1QLgmhya_9tKWTrb0r',#5,$,$,#877,(#22));
+#880=IFCRELCONTAINEDINSPATIALSTRUCTURE('1aNmgGcdIG3Ch2tBiOpBUS',#5,$,$,(#47,#62,#77,#92,#107,#122,#137,#152,#167,#182,#197,#212,#227,#254,#282,#310,#338,#366,#394,#422,#450,#478,#506,#536,#556,#573,#586,#599,#612,#625,#638,#654,#673,#690,#709,#726,#745,#762,#781,#798,#816,#834,#852,#868),#26);
+#881=IFCCARTESIANPOINT((2397.5,6517.5));
+#882=IFCCARTESIANPOINT((4992.5,6517.5));
+#883=IFCCARTESIANPOINT((4992.5,8600.));
+#884=IFCCARTESIANPOINT((2397.5,8600.));
+#885=IFCPOLYLINE((#881,#882,#883,#884,#881));
+#886=IFCARBITRARYCLOSEDPROFILEDEF(.AREA.,'Bedroom',#885);
+#887=IFCCARTESIANPOINT((0.,0.,0.));
+#888=IFCAXIS2PLACEMENT3D(#887,$,$);
+#889=IFCDIRECTION((0.,0.,1.));
+#890=IFCEXTRUDEDAREASOLID(#886,#888,#889,2200.);
+#891=IFCCARTESIANPOINT((0.,0.,0.));
+#892=IFCAXIS2PLACEMENT3D(#891,$,$);
+#893=IFCLOCALPLACEMENT(#25,#892);
+#894=IFCSHAPEREPRESENTATION(#15,'Body','SweptSolid',(#890));
+#895=IFCPRODUCTDEFINITIONSHAPE($,$,(#894));
+#896=IFCSPACE('1WolMsTTOxgH8jOQxaOSpY',#5,'Bedroom',$,$,#893,#895,'Bedroom',.ELEMENT.,.SPACE.,0.);
+#897=IFCCARTESIANPOINT((6087.5,7147.5));
+#898=IFCCARTESIANPOINT((7940.,7147.5));
+#899=IFCCARTESIANPOINT((7940.,8600.));
+#900=IFCCARTESIANPOINT((6087.5,8600.));
+#901=IFCPOLYLINE((#897,#898,#899,#900,#897));
+#902=IFCARBITRARYCLOSEDPROFILEDEF(.AREA.,'Bathroom',#901);
+#903=IFCCARTESIANPOINT((0.,0.,0.));
+#904=IFCAXIS2PLACEMENT3D(#903,$,$);
+#905=IFCDIRECTION((0.,0.,1.));
+#906=IFCEXTRUDEDAREASOLID(#902,#904,#905,2200.);
+#907=IFCCARTESIANPOINT((0.,0.,0.));
+#908=IFCAXIS2PLACEMENT3D(#907,$,$);
+#909=IFCLOCALPLACEMENT(#25,#908);
+#910=IFCSHAPEREPRESENTATION(#15,'Body','SweptSolid',(#906));
+#911=IFCPRODUCTDEFINITIONSHAPE($,$,(#910));
+#912=IFCSPACE('3Ku0xXoV$PR9jlVvMw9yFe',#5,'Bathroom',$,$,#909,#911,'Bathroom',.ELEMENT.,.SPACE.,0.);
+#913=IFCCARTESIANPOINT((0.,4190.));
+#914=IFCCARTESIANPOINT((4340.,4190.));
+#915=IFCCARTESIANPOINT((4340.,0.));
+#916=IFCCARTESIANPOINT((7940.,0.));
+#917=IFCCARTESIANPOINT((7940.,7052.5));
+#918=IFCCARTESIANPOINT((5992.5,7052.5));
+#919=IFCCARTESIANPOINT((5992.5,8600.));
+#920=IFCCARTESIANPOINT((5087.5,8600.));
+#921=IFCCARTESIANPOINT((5087.5,6422.5));
+#922=IFCCARTESIANPOINT((2302.5,6422.5));
+#923=IFCCARTESIANPOINT((2302.5,8600.));
+#924=IFCCARTESIANPOINT((0.,8600.));
+#925=IFCPOLYLINE((#913,#914,#915,#916,#917,#918,#919,#920,#921,#922,#923,#924,#913));
+#926=IFCARBITRARYCLOSEDPROFILEDEF(.AREA.,'Living',#925);
+#927=IFCCARTESIANPOINT((0.,0.,0.));
+#928=IFCAXIS2PLACEMENT3D(#927,$,$);
+#929=IFCDIRECTION((0.,0.,1.));
+#930=IFCEXTRUDEDAREASOLID(#926,#928,#929,2200.);
+#931=IFCCARTESIANPOINT((0.,0.,0.));
+#932=IFCAXIS2PLACEMENT3D(#931,$,$);
+#933=IFCLOCALPLACEMENT(#25,#932);
+#934=IFCSHAPEREPRESENTATION(#15,'Body','SweptSolid',(#930));
+#935=IFCPRODUCTDEFINITIONSHAPE($,$,(#934));
+#936=IFCSPACE('3h6$3R33ye$kqziK0VEzg7',#5,'Living',$,$,#933,#935,'Kitchen / dining / living',.ELEMENT.,.SPACE.,0.);
+#937=IFCRELAGGREGATES('1ERgVgmzYC$WAxgk3nNN2Q',#5,$,$,#26,(#896,#912,#936));
 ENDSEC;
 END-ISO-10303-21;
 </script>
@@ -814,6 +1121,13 @@ function axis2(id) {
           x[1],  x[0], 0, loc[1],
           0, 0, 1, 0,
           0, 0, 0, 1];
+}
+
+// Where a product sits, ignoring its geometry. Used to hang a label on a device.
+function placementOrigin(id) {
+  if (!id) return null;
+  const m = placement(id);
+  return [m[3], m[7], m[11]];
 }
 
 const placementCache = new Map();
@@ -1070,6 +1384,9 @@ const LAYERS = [
   { key: "floor",     name: "Floor slab",     color: [0.44, 0.43, 0.42], on: true },
   { key: "windows",   name: "Windows",        color: [0.52, 0.66, 0.72], on: true },
   { key: "doors",     name: "Doors",          color: [0.24, 0.38, 0.47], on: true },
+  { key: "fittings",  name: "Kitchen",        color: [0.78, 0.70, 0.58], on: true },
+  { key: "heating",   name: "Heating",        color: [0.93, 0.51, 0.21], on: true },
+  { key: "sensors",   name: "Sensors",        color: [0.22, 0.71, 0.61], on: true },
   { key: "site",      name: "Ground",         color: [0.95, 0.96, 0.97], on: true },
   { key: "rooms",     name: "Rooms",          color: [0.95, 0.72, 0.30], on: false, alpha: 0.55 },
 ];
@@ -1092,7 +1409,7 @@ function build() {
   }
 
   const colorOf = k => LAYERS.find(l => l.key === k).color;
-  let counts = { walls: 0, windows: 0, doors: 0, rooms: 0 };
+  let counts = { walls: 0, windows: 0, doors: 0, rooms: 0, devices: 0 };
 
   for (const [id, e] of ents) {
     let layer = null, color = null;
@@ -1113,7 +1430,25 @@ function build() {
       layer = "rooms";
       color = ROOM_COLORS[counts.rooms % ROOM_COLORS.length];
       counts.rooms++;
+    } else if (e.type === "IFCFURNISHINGELEMENT" || e.type === "IFCSANITARYTERMINAL") {
+      layer = "fittings";
+      if (e.type === "IFCSANITARYTERMINAL") color = [0.86, 0.87, 0.88];
+    } else if (e.type === "IFCELECTRICAPPLIANCE") {
+      layer = "fittings"; color = [0.71, 0.73, 0.75]; // brushed steel
+    } else if (e.type === "IFCSPACEHEATER" || e.type === "IFCOUTLET") {
+      layer = "heating"; counts.devices++;
+      if (e.type === "IFCOUTLET") color = [0.96, 0.78, 0.35];
+    } else if (e.type === "IFCSENSOR") {
+      layer = "sensors"; counts.devices++;
     } else continue;
+
+    // Heaters and sensors earn a label, so the plan says which is which. The
+    // plugs do not: each one sits beside the heater it switches, and labelling
+    // them only crowds the drawing.
+    if (e.type === "IFCSPACEHEATER" || layer === "sensors") {
+      const at = placementOrigin(ref(e.args[5]));
+      if (at) labels.push({ text: str(e.args[2]), at, layer });
+    }
 
     color = color || colorOf(layer);
     const mesh = meshes[layer];
@@ -1130,7 +1465,7 @@ function build() {
       if (layer === "rooms") {
         const at = addPlate(mesh, p, p.bottom[0][2] + 25, color);
         const long = str(e.args[7]) || str(e.args[2]);
-        if (at && long) labels.push({ text: long, at });
+        if (at && long) labels.push({ text: long, at, layer: "rooms" });
         continue;
       }
       const voids = voidsByWall.get(id);
@@ -1158,11 +1493,11 @@ function build() {
 
 // Ground plane and a north arrow, from the true north direction stored in the
 // IFC geometric context.
-function addSite(bounds) {
+function addSite(ground, house) {
   const m = meshes.site;
-  const cx = (bounds.min[0] + bounds.max[0]) / 2, cy = (bounds.min[1] + bounds.max[1]) / 2;
-  const r = Math.max(bounds.max[0] - bounds.min[0], bounds.max[1] - bounds.min[1]) * 1.9;
-  const z = bounds.min[2] - 1;
+  const cx = (ground.min[0] + ground.max[0]) / 2, cy = (ground.min[1] + ground.max[1]) / 2;
+  const r = Math.max(ground.max[0] - ground.min[0], ground.max[1] - ground.min[1]) * 2.2;
+  const z = house.min[2] - 1;
   tri(m, [cx-r, cy-r, z], [cx+r, cy-r, z], [cx+r, cy+r, z], [0.93,0.94,0.95]);
   tri(m, [cx-r, cy-r, z], [cx+r, cy+r, z], [cx-r, cy+r, z], [0.93,0.94,0.95]);
 
@@ -1175,7 +1510,8 @@ function addSite(bounds) {
   const l = Math.hypot(n[0], n[1]) || 1;
   n = [n[0] / l, n[1] / l];
   const side = [-n[1], n[0]];
-  const ox = bounds.min[0] - r * 0.30, oy = bounds.min[1] - r * 0.30, s = 1400, zz = z + 2;
+  const span = Math.max(house.max[0] - house.min[0], house.max[1] - house.min[1]);
+  const ox = house.min[0] - span * 0.30, oy = house.min[1] - span * 0.30, s = 1400, zz = z + 2;
   const tip  = [ox + n[0]*s,        oy + n[1]*s,        zz];
   const back = [ox - n[0]*s*0.45,   oy - n[1]*s*0.45,   zz];
   const lw   = [ox + side[0]*s*0.42 - n[0]*s*0.15, oy + side[1]*s*0.42 - n[1]*s*0.15, zz];
@@ -1263,11 +1599,11 @@ function mulCM(a, b) {
 
 // ----------------------------------------------------------------- run it all
 
-let buffers = {}, bounds, cam;
+let buffers = {}, bounds, siteBounds, cam;
 
-function boundsOf() {
+function boundsOf(keys) {
   const pts = [];
-  for (const k of ["walls", "partition", "roof", "floor"]) {
+  for (const k of keys) {
     const p = meshes[k].pos;
     for (let i = 0; i < p.length; i += 3) pts.push([p[i], p[i+1], p[i+2]]);
   }
@@ -1275,18 +1611,20 @@ function boundsOf() {
 }
 
 function frame(view) {
-  const c = [(bounds.min[0]+bounds.max[0])/2, (bounds.min[1]+bounds.max[1])/2, (bounds.min[2]+bounds.max[2])/2];
-  const span = Math.max(bounds.max[0]-bounds.min[0], bounds.max[1]-bounds.min[1], bounds.max[2]-bounds.min[2]);
-  const d = span * 1.7;
   const views = {
     iso:    { yaw: -1.15, pitch: 0.42 },
     plan:   { yaw: -Math.PI / 2, pitch: 1.5533 },
     front:  { yaw: -Math.PI / 2, pitch: 0.12 },
     back:   { yaw: Math.PI / 2, pitch: 0.12 },
     layout: { yaw: -Math.PI / 2, pitch: 1.5533, hide: ["roof"], show: ["rooms"] },
+    // The wind gauge stands 50 m out, so it needs a frame of its own.
+    site:   { yaw: -Math.PI / 2, pitch: 0.62, whole: true, zoom: 0.68 },
   };
   const v = views[view] || views.iso;
-  cam = { target: c, dist: d * (v.zoom || 1), yaw: v.yaw, pitch: v.pitch };
+  const box = v.whole ? siteBounds : bounds;
+  const c = [(box.min[0]+box.max[0])/2, (box.min[1]+box.max[1])/2, (box.min[2]+box.max[2])/2];
+  const span = Math.max(box.max[0]-box.min[0], box.max[1]-box.min[1], box.max[2]-box.min[2]);
+  cam = { target: c, dist: span * 1.7 * (v.zoom || 1), yaw: v.yaw, pitch: v.pitch };
   if (v.hide || v.show) {
     for (const l of LAYERS) {
       if (v.hide && v.hide.includes(l.key)) l.on = false;
@@ -1347,11 +1685,14 @@ function draw() {
 }
 
 function placeLabels(vp) {
-  const on = LAYERS.find(l => l.key === "rooms").on;
+  // Labels are drawn over the scene with no depth test, so they only make
+  // sense once the roof is out of the way.
+  const roofed = LAYERS.find(l => l.key === "roof").on;
   const W = canvas.clientWidth, H = canvas.clientHeight;
   for (const l of labels) {
     if (!l.el) continue;
-    if (!on) { l.el.style.display = "none"; continue; }
+    const layer = LAYERS.find(x => x.key === l.layer);
+    if (roofed || !layer || !layer.on) { l.el.style.display = "none"; continue; }
     const p = l.at;
     const cw = vp[3]*p[0] + vp[7]*p[1] + vp[11]*p[2] + vp[15];
     if (cw <= 0) { l.el.style.display = "none"; continue; }
@@ -1402,7 +1743,7 @@ function ui(counts) {
   ];
   document.getElementById("stats").textContent =
     `${m[0].toFixed(2)} × ${m[1].toFixed(2)} m, ridge ${m[2].toFixed(2)} m · ` +
-    `${counts.windows} windows, ${counts.doors} doors`;
+    `${counts.windows} windows, ${counts.doors} doors, ${counts.devices} devices`;
 }
 
 function pointer() {
@@ -1440,8 +1781,9 @@ function pointer() {
 try {
   parse(document.getElementById("model").textContent);
   const counts = build();
-  bounds = boundsOf();
-  addSite(bounds);
+  bounds = boundsOf(["walls", "partition", "roof", "floor"]);
+  siteBounds = boundsOf(LAYERS.map(l => l.key).filter(k => k !== "site"));
+  addSite(siteBounds, bounds);
   for (const l of LAYERS) buffers[l.key] = upload(meshes[l.key]);
   frame(location.hash.slice(1) || "iso");
   ui(counts);

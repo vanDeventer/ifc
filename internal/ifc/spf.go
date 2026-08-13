@@ -31,6 +31,19 @@ type Null struct{}
 // List is an ordered STEP aggregate, written as (a,b,c).
 type List []any
 
+// Typed is a value wrapped in its defined type, written as IFCLABEL('x'). IFC
+// needs this wherever an attribute is a SELECT over measure types, as the
+// nominal value of a property is.
+type Typed struct {
+	Type  string
+	Value any
+}
+
+// Label, Text and Power are the typed values this package needs most.
+func Label(s string) Typed  { return Typed{"IFCLABEL", s} }
+func Text(s string) Typed   { return Typed{"IFCTEXT", s} }
+func Power(w float64) Typed { return Typed{"IFCPOWERMEASURE", w} }
+
 // File collects entity instances in the order they are added.
 type File struct {
 	Description  string
@@ -122,6 +135,8 @@ func value(v any) string {
 		return "#" + strconv.Itoa(int(t))
 	case Enum:
 		return "." + string(t) + "."
+	case Typed:
+		return t.Type + "(" + value(t.Value) + ")"
 	case bool:
 		if t {
 			return ".T."

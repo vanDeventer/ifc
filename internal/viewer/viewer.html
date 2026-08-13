@@ -65,6 +65,7 @@
     <button data-view="front">Front</button>
     <button data-view="back">Back</button>
     <button data-view="layout">Layout</button>
+    <button data-view="site">Site</button>
   </div>
   <p id="hint">Drag to orbit · shift-drag or right-drag to pan · scroll to zoom</p>
 </aside>
@@ -167,6 +168,13 @@ function axis2(id) {
           x[1],  x[0], 0, loc[1],
           0, 0, 1, 0,
           0, 0, 0, 1];
+}
+
+// Where a product sits, ignoring its geometry. Used to hang a label on a device.
+function placementOrigin(id) {
+  if (!id) return null;
+  const m = placement(id);
+  return [m[3], m[7], m[11]];
 }
 
 const placementCache = new Map();
@@ -423,6 +431,9 @@ const LAYERS = [
   { key: "floor",     name: "Floor slab",     color: [0.44, 0.43, 0.42], on: true },
   { key: "windows",   name: "Windows",        color: [0.52, 0.66, 0.72], on: true },
   { key: "doors",     name: "Doors",          color: [0.24, 0.38, 0.47], on: true },
+  { key: "fittings",  name: "Kitchen",        color: [0.78, 0.70, 0.58], on: true },
+  { key: "heating",   name: "Heating",        color: [0.93, 0.51, 0.21], on: true },
+  { key: "sensors",   name: "Sensors",        color: [0.22, 0.71, 0.61], on: true },
   { key: "site",      name: "Ground",         color: [0.95, 0.96, 0.97], on: true },
   { key: "rooms",     name: "Rooms",          color: [0.95, 0.72, 0.30], on: false, alpha: 0.55 },
 ];
@@ -445,7 +456,7 @@ function build() {
   }
 
   const colorOf = k => LAYERS.find(l => l.key === k).color;
-  let counts = { walls: 0, windows: 0, doors: 0, rooms: 0 };
+  let counts = { walls: 0, windows: 0, doors: 0, rooms: 0, devices: 0 };
 
   for (const [id, e] of ents) {
     let layer = null, color = null;
@@ -466,7 +477,25 @@ function build() {
       layer = "rooms";
       color = ROOM_COLORS[counts.rooms % ROOM_COLORS.length];
       counts.rooms++;
+    } else if (e.type === "IFCFURNISHINGELEMENT" || e.type === "IFCSANITARYTERMINAL") {
+      layer = "fittings";
+      if (e.type === "IFCSANITARYTERMINAL") color = [0.86, 0.87, 0.88];
+    } else if (e.type === "IFCELECTRICAPPLIANCE") {
+      layer = "fittings"; color = [0.71, 0.73, 0.75]; // brushed steel
+    } else if (e.type === "IFCSPACEHEATER" || e.type === "IFCOUTLET") {
+      layer = "heating"; counts.devices++;
+      if (e.type === "IFCOUTLET") color = [0.96, 0.78, 0.35];
+    } else if (e.type === "IFCSENSOR") {
+      layer = "sensors"; counts.devices++;
     } else continue;
+
+    // Heaters and sensors earn a label, so the plan says which is which. The
+    // plugs do not: each one sits beside the heater it switches, and labelling
+    // them only crowds the drawing.
+    if (e.type === "IFCSPACEHEATER" || layer === "sensors") {
+      const at = placementOrigin(ref(e.args[5]));
+      if (at) labels.push({ text: str(e.args[2]), at, layer });
+    }
 
     color = color || colorOf(layer);
     const mesh = meshes[layer];
@@ -483,7 +512,7 @@ function build() {
       if (layer === "rooms") {
         const at = addPlate(mesh, p, p.bottom[0][2] + 25, color);
         const long = str(e.args[7]) || str(e.args[2]);
-        if (at && long) labels.push({ text: long, at });
+        if (at && long) labels.push({ text: long, at, layer: "rooms" });
         continue;
       }
       const voids = voidsByWall.get(id);
@@ -511,11 +540,11 @@ function build() {
 
 // Ground plane and a north arrow, from the true north direction stored in the
 // IFC geometric context.
-function addSite(bounds) {
+function addSite(ground, house) {
   const m = meshes.site;
-  const cx = (bounds.min[0] + bounds.max[0]) / 2, cy = (bounds.min[1] + bounds.max[1]) / 2;
-  const r = Math.max(bounds.max[0] - bounds.min[0], bounds.max[1] - bounds.min[1]) * 1.9;
-  const z = bounds.min[2] - 1;
+  const cx = (ground.min[0] + ground.max[0]) / 2, cy = (ground.min[1] + ground.max[1]) / 2;
+  const r = Math.max(ground.max[0] - ground.min[0], ground.max[1] - ground.min[1]) * 2.2;
+  const z = house.min[2] - 1;
   tri(m, [cx-r, cy-r, z], [cx+r, cy-r, z], [cx+r, cy+r, z], [0.93,0.94,0.95]);
   tri(m, [cx-r, cy-r, z], [cx+r, cy+r, z], [cx-r, cy+r, z], [0.93,0.94,0.95]);
 
@@ -528,7 +557,8 @@ function addSite(bounds) {
   const l = Math.hypot(n[0], n[1]) || 1;
   n = [n[0] / l, n[1] / l];
   const side = [-n[1], n[0]];
-  const ox = bounds.min[0] - r * 0.30, oy = bounds.min[1] - r * 0.30, s = 1400, zz = z + 2;
+  const span = Math.max(house.max[0] - house.min[0], house.max[1] - house.min[1]);
+  const ox = house.min[0] - span * 0.30, oy = house.min[1] - span * 0.30, s = 1400, zz = z + 2;
   const tip  = [ox + n[0]*s,        oy + n[1]*s,        zz];
   const back = [ox - n[0]*s*0.45,   oy - n[1]*s*0.45,   zz];
   const lw   = [ox + side[0]*s*0.42 - n[0]*s*0.15, oy + side[1]*s*0.42 - n[1]*s*0.15, zz];
@@ -616,11 +646,11 @@ function mulCM(a, b) {
 
 // ----------------------------------------------------------------- run it all
 
-let buffers = {}, bounds, cam;
+let buffers = {}, bounds, siteBounds, cam;
 
-function boundsOf() {
+function boundsOf(keys) {
   const pts = [];
-  for (const k of ["walls", "partition", "roof", "floor"]) {
+  for (const k of keys) {
     const p = meshes[k].pos;
     for (let i = 0; i < p.length; i += 3) pts.push([p[i], p[i+1], p[i+2]]);
   }
@@ -628,18 +658,20 @@ function boundsOf() {
 }
 
 function frame(view) {
-  const c = [(bounds.min[0]+bounds.max[0])/2, (bounds.min[1]+bounds.max[1])/2, (bounds.min[2]+bounds.max[2])/2];
-  const span = Math.max(bounds.max[0]-bounds.min[0], bounds.max[1]-bounds.min[1], bounds.max[2]-bounds.min[2]);
-  const d = span * 1.7;
   const views = {
     iso:    { yaw: -1.15, pitch: 0.42 },
     plan:   { yaw: -Math.PI / 2, pitch: 1.5533 },
     front:  { yaw: -Math.PI / 2, pitch: 0.12 },
     back:   { yaw: Math.PI / 2, pitch: 0.12 },
     layout: { yaw: -Math.PI / 2, pitch: 1.5533, hide: ["roof"], show: ["rooms"] },
+    // The wind gauge stands 50 m out, so it needs a frame of its own.
+    site:   { yaw: -Math.PI / 2, pitch: 0.62, whole: true, zoom: 0.68 },
   };
   const v = views[view] || views.iso;
-  cam = { target: c, dist: d * (v.zoom || 1), yaw: v.yaw, pitch: v.pitch };
+  const box = v.whole ? siteBounds : bounds;
+  const c = [(box.min[0]+box.max[0])/2, (box.min[1]+box.max[1])/2, (box.min[2]+box.max[2])/2];
+  const span = Math.max(box.max[0]-box.min[0], box.max[1]-box.min[1], box.max[2]-box.min[2]);
+  cam = { target: c, dist: span * 1.7 * (v.zoom || 1), yaw: v.yaw, pitch: v.pitch };
   if (v.hide || v.show) {
     for (const l of LAYERS) {
       if (v.hide && v.hide.includes(l.key)) l.on = false;
@@ -700,11 +732,14 @@ function draw() {
 }
 
 function placeLabels(vp) {
-  const on = LAYERS.find(l => l.key === "rooms").on;
+  // Labels are drawn over the scene with no depth test, so they only make
+  // sense once the roof is out of the way.
+  const roofed = LAYERS.find(l => l.key === "roof").on;
   const W = canvas.clientWidth, H = canvas.clientHeight;
   for (const l of labels) {
     if (!l.el) continue;
-    if (!on) { l.el.style.display = "none"; continue; }
+    const layer = LAYERS.find(x => x.key === l.layer);
+    if (roofed || !layer || !layer.on) { l.el.style.display = "none"; continue; }
     const p = l.at;
     const cw = vp[3]*p[0] + vp[7]*p[1] + vp[11]*p[2] + vp[15];
     if (cw <= 0) { l.el.style.display = "none"; continue; }
@@ -755,7 +790,7 @@ function ui(counts) {
   ];
   document.getElementById("stats").textContent =
     `${m[0].toFixed(2)} × ${m[1].toFixed(2)} m, ridge ${m[2].toFixed(2)} m · ` +
-    `${counts.windows} windows, ${counts.doors} doors`;
+    `${counts.windows} windows, ${counts.doors} doors, ${counts.devices} devices`;
 }
 
 function pointer() {
@@ -793,8 +828,9 @@ function pointer() {
 try {
   parse(document.getElementById("model").textContent);
   const counts = build();
-  bounds = boundsOf();
-  addSite(bounds);
+  bounds = boundsOf(["walls", "partition", "roof", "floor"]);
+  siteBounds = boundsOf(LAYERS.map(l => l.key).filter(k => k !== "site"));
+  addSite(siteBounds, bounds);
   for (const l of LAYERS) buffers[l.key] = upload(meshes[l.key]);
   frame(location.hash.slice(1) || "iso");
   ui(counts);

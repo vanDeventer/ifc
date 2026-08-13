@@ -10,10 +10,11 @@ import (
 
 // builder carries the entities that nearly every product needs.
 type builder struct {
-	f     *ifc.File
-	owner ifc.Ref
-	body  ifc.Ref // the Body representation subcontext
-	floor ifc.Ref // placement of the storey, and of every element in it
+	f        *ifc.File
+	owner    ifc.Ref
+	body     ifc.Ref // the Body representation subcontext
+	floor    ifc.Ref // placement of the storey, and of every element in it
+	building ifc.Ref
 
 	elements []ifc.Ref // everything contained in the storey
 }
@@ -27,7 +28,10 @@ func Build(p Params, stamp time.Time) *ifc.File {
 	org := f.Add("IFCORGANIZATION", ifc.Null{}, "Luleå University of Technology", ifc.Null{}, ifc.Null{}, ifc.Null{})
 	pao := f.Add("IFCPERSONANDORGANIZATION", person, org, ifc.Null{})
 	app := f.Add("IFCAPPLICATION", org, "0.1", "ifcgen", "ifcgen")
-	b.owner = f.Add("IFCOWNERHISTORY", pao, app, ifc.Null{}, ifc.Enum("ADDED"),
+	// NOCHANGE, not ADDED: rule IfcOwnerHistory.CorrectChangeAction only allows
+	// the other actions when a LastModifiedDate goes with them, and a generated
+	// file has never been modified.
+	b.owner = f.Add("IFCOWNERHISTORY", pao, app, ifc.Null{}, ifc.Enum("NOCHANGE"),
 		ifc.Null{}, ifc.Null{}, ifc.Null{}, int(stamp.Unix()))
 
 	// Millimetres, because every dimension given was in millimetres.
@@ -66,9 +70,11 @@ func Build(p Params, stamp time.Time) *ifc.File {
 	f.Add("IFCRELAGGREGATES", ifc.GUID("agg-site"), b.owner, ifc.Null{}, ifc.Null{}, site, []ifc.Ref{building})
 	f.Add("IFCRELAGGREGATES", ifc.GUID("agg-building"), b.owner, ifc.Null{}, ifc.Null{}, building, []ifc.Ref{storey})
 
+	b.building = building
 	b.slab(p)
 	b.walls(p)
 	b.roof(p)
+	b.fittings(p)
 
 	f.Add("IFCRELCONTAINEDINSPATIALSTRUCTURE", ifc.GUID("contained"), b.owner,
 		ifc.Null{}, ifc.Null{}, b.elements, storey)

@@ -52,6 +52,37 @@ Inside floor area 50.10 m². The four clear widths along the back wall
 (1900 + 1000 + 2690 + 2350) sum to exactly 7940, so each partition is centred on
 its boundary and takes 47.5 mm off the two rooms it separates.
 
+## Fittings, heating and sensors
+
+Beyond the building itself the model carries the kitchen units, the electric
+heating and the weather station, each as its proper IFC entity rather than as
+decoration:
+
+| | |
+|---|---|
+| `IfcSanitaryTerminal` | the sink, in the run under the back window |
+| `IfcElectricAppliance` | the cooker and the full-height fridge, against the west wall |
+| `IfcSpaceHeater` | three 2000 W panels under windows, one 1000 W in the bathroom |
+| `IfcOutlet` | the Aqara plug that switches each heater |
+| `IfcSensor` | four NetAtmo modules: indoor, outdoor north, bathroom, and the wind gauge 50 m out |
+
+The two mbaigo systems are in the model as `IfcSystem`, with each device
+assigned to its owner and a property set naming it:
+
+```
+BeeKeeper     switches the heaters through Aqara plugs
+Meteorologue  reads the NetAtmo weather station
+```
+
+So a system can find its own devices by walking `IfcRelAssignsToGroup` from the
+`IfcSystem` named after it, and read `NominalPower` off each heater, without
+knowing anything about this repository's Go types.
+
+One arithmetic conflict is left deliberately visible. The cooker sits 1400 mm
+from the back wall as first described, and a 600 cooker followed by a 600 fridge
+then ends 420 mm past the bedroom wall rather than level with it. Holding the
+fridge to that line instead would put the cooker 980 mm from the back wall.
+
 ## What came from where
 
 Given as measurements: the L footprint, the four room widths along the back
@@ -69,6 +100,9 @@ position on the back wall, of which there is no photograph.
 
 The roofs are massing, not layered constructions, and the two interpenetrate at
 the junction rather than meeting in a modelled valley.
+
+The file passes `python -m ifcopenshell.validate cottage.ifc --rules` with no
+issues, and every product builds geometry under `ifcopenshell.geom`.
 
 ## From mbaigo
 

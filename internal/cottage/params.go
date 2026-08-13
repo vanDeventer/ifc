@@ -48,6 +48,7 @@ type Params struct {
 	Walls    []Wall
 	Openings []Opening
 	Spaces   []Space
+	Fittings []Fitting
 }
 
 // Wall is a straight wall segment given by the centreline endpoints of its
@@ -81,6 +82,24 @@ type Space struct {
 	Name    string
 	Long    string
 	Polygon [][2]float64
+}
+
+// Fitting is anything standing in or on the building rather than forming it:
+// kitchen units, heaters, the sockets that switch them, and sensors. Each is
+// given as its box in plan plus the range of heights it occupies, which is
+// enough for both the IFC and the drawing.
+type Fitting struct {
+	Name           string
+	Kind           string // counter, sink, cooker, fridge, heater, plug, sensor, mast
+	X1, Y1, X2, Y2 float64
+	Base, Top      float64
+
+	// System names the mbaigo system that owns the device, and is written into
+	// the model as an IfcSystem the device is assigned to.
+	System string
+	Watts  float64 // heaters
+	Sensor string  // IfcSensorTypeEnum member, for sensors
+	Note   string
 }
 
 // Default is the cottage as described so far. Values marked ASSUMED were not
@@ -205,5 +224,95 @@ func Default() Params {
 				{bedW - hi, y2}, {x0, y2},
 			}},
 		},
+
+		Fittings: fittings(bedW-hi, bedS-hi, bathW+hi, bathS+hi, x1, x2, y1, y2),
+	}
+}
+
+// fittings lists the kitchen units and the two mbaigo-controlled device
+// families. The arguments are the room faces they are measured against:
+// the kitchen's east wall and the bedroom's south wall, the bathroom's west and
+// south walls, and the envelope's inside faces.
+func fittings(kitchenE, bedroomS, bathW, bathS, x1, x2, y1, y2 float64) []Fitting {
+	const (
+		counter   = 600.0 // depth of the kitchen units
+		worktop   = 900.0
+		appliance = 600.0 // width of the cooker and of the fridge
+		panel     = 110.0 // depth of an electric panel heater
+		heaterZ0  = 150.0
+		heaterZ1  = 550.0
+
+		// The west-wall run, measured from the back wall southwards: worktop,
+		// then the cooker, then the fridge.
+		runStart = 1400.0 // "the stove 1400 mm from the base"
+		windX    = 3970.0 // roughly the middle of the front elevation
+		windDist = 50000.0
+	)
+	cookerN := y2 - runStart
+	cookerS := cookerN - appliance
+	fridgeS := cookerS - appliance
+
+	return []Fitting{
+		// Kitchen. The sink sits in the run along the back wall, under the
+		// window; the cooker and the full-height fridge stand against the west
+		// wall, which is the outside wall opposite the bedroom.
+		{Name: "Kitchen worktop (back wall)", Kind: "counter",
+			X1: 0, Y1: y2 - counter, X2: kitchenE, Y2: y2, Base: 0, Top: worktop},
+		{Name: "Kitchen worktop (west wall)", Kind: "counter",
+			X1: 0, Y1: cookerN, X2: counter, Y2: y2, Base: 0, Top: worktop},
+		{Name: "Sink", Kind: "sink",
+			X1: 775, Y1: y2 - 540, X2: 1575, Y2: y2 - 60, Base: 820, Top: worktop},
+		{Name: "Cooker", Kind: "cooker",
+			X1: 0, Y1: cookerS, X2: counter, Y2: cookerN, Base: 0, Top: worktop},
+		{Name: "Fridge", Kind: "fridge",
+			X1: 0, Y1: fridgeS, X2: counter, Y2: cookerS, Base: 0, Top: 1900,
+			Note: "Full height; should finish level with the bedroom wall"},
+
+		// Heating: three 2000 W panels under windows and a 1000 W panel in the
+		// bathroom, each switched by an Aqara plug that BeeKeeper drives.
+		{Name: "Heater, kitchen", Kind: "heater", System: "BeeKeeper", Watts: 2000,
+			X1: 750, Y1: y1, X2: 1750, Y2: y1 + panel, Base: heaterZ0, Top: heaterZ1,
+			Note: "Under the kitchen window beside the entrance"},
+		{Name: "Plug, kitchen heater", Kind: "plug", System: "BeeKeeper",
+			X1: 1950, Y1: y1, X2: 2020, Y2: y1 + 45, Base: 200, Top: 310},
+
+		{Name: "Heater, living west", Kind: "heater", System: "BeeKeeper", Watts: 2000,
+			X1: x1, Y1: 1595, X2: x1 + panel, Y2: 2595, Base: heaterZ0, Top: heaterZ1,
+			Note: "Under the window on the far side of the entrance"},
+		{Name: "Plug, living west heater", Kind: "plug", System: "BeeKeeper",
+			X1: x1, Y1: 2795, X2: x1 + 45, Y2: 2865, Base: 200, Top: 310},
+
+		{Name: "Heater, living east", Kind: "heater", System: "BeeKeeper", Watts: 2000,
+			X1: x2 - panel, Y1: 1595, X2: x2, Y2: 2595, Base: heaterZ0, Top: heaterZ1,
+			Note: "Under the window on the rise's other side"},
+		{Name: "Plug, living east heater", Kind: "plug", System: "BeeKeeper",
+			X1: x2 - 45, Y1: 2795, X2: x2, Y2: 2865, Base: 200, Top: 310},
+
+		{Name: "Heater, bathroom", Kind: "heater", System: "BeeKeeper", Watts: 1000,
+			X1: 6690, Y1: bathS, X2: 7290, Y2: bathS + panel, Base: heaterZ0, Top: heaterZ1,
+			Note: "On the wall opposite the bathroom window"},
+		{Name: "Plug, bathroom heater", Kind: "plug", System: "BeeKeeper",
+			X1: 7420, Y1: bathS, X2: 7490, Y2: bathS + 45, Base: 200, Top: 310},
+
+		// Weather: a NetAtmo station reporting to Meteorologue.
+		{Name: "NetAtmo base module", Kind: "sensor", System: "Meteorologue",
+			Sensor: "TEMPERATURESENSOR",
+			X1:     x1, Y1: 2950, X2: x1 + 60, Y2: 3010, Base: 1500, Top: 1650,
+			Note: "Indoor module; position within the living area ASSUMED"},
+		{Name: "NetAtmo outdoor module", Kind: "sensor", System: "Meteorologue",
+			Sensor: "TEMPERATURESENSOR",
+			X1:     3970, Y1: y2 + 170, X2: 4030, Y2: y2 + 215, Base: 1800, Top: 1950,
+			Note: "On the north side; height and position along the wall ASSUMED"},
+		{Name: "NetAtmo bathroom module", Kind: "sensor", System: "Meteorologue",
+			Sensor: "HUMIDITYSENSOR",
+			X1:     bathW, Y1: 7900, X2: bathW + 60, Y2: 7960, Base: 1600, Top: 1750,
+			Note: "Extra indoor module; position within the bathroom ASSUMED"},
+		{Name: "Wind gauge mast", Kind: "mast",
+			X1: windX - 40, Y1: -windDist - 40, X2: windX + 40, Y2: -windDist + 40, Base: 0, Top: 3000,
+			Note: "Mast height ASSUMED"},
+		{Name: "NetAtmo wind gauge", Kind: "sensor", System: "Meteorologue",
+			Sensor: "WINDSENSOR",
+			X1:     windX - 75, Y1: -windDist - 75, X2: windX + 75, Y2: -windDist + 75, Base: 3000, Top: 3150,
+			Note: "50 m in front of the house"},
 	}
 }
