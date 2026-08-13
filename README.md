@@ -93,7 +93,7 @@ describing. So today: **write a new `Params` value, plus a footprint and a roof.
 Lifting those last two into `Params` as a polygon and a list of roof shapes
 would make it data all the way down.
 
-## Layout
+## Files
 
 ```
 cmd/ifcgen          writes the model and the viewer
