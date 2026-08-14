@@ -97,6 +97,11 @@ type Fitting struct {
 	// System names the mbaigo system that owns the device, and is written into
 	// the model as an IfcSystem the device is assigned to.
 	System string
+
+	// Networks lists the building distribution systems the fitting belongs to,
+	// such as the cold water supply. A fixture is usually on more than one.
+	Networks []string
+
 	Watts  float64 // heaters
 	Sensor string  // IfcSensorTypeEnum member, for sensors
 	Note   string
@@ -189,7 +194,10 @@ func Default() Params {
 			// Back wall: one window per back room.
 			{Wall: "Back", Name: "Kitchen window (back)", At: 1175, Width: 1000, Height: 1000, Sill: 1100},
 			{Wall: "Back", Name: "Bedroom window", At: 3695, Width: 1200, Height: 1200, Sill: 900},
-			{Wall: "Back", Name: "Bathroom window", At: 6990, Width: 600, Height: 600, Sill: 1500},
+			// Not centred in the bathroom: the shower stands in the corner of
+			// the two outside walls, so the window sits in what is left of the
+			// back wall west of it, with the basin under it.
+			{Wall: "Back", Name: "Bathroom window", At: 6564, Width: 600, Height: 600, Sill: 1500},
 
 			// Front of the base: the wide three-light kitchen window at the west
 			// end, then the blue entrance door at the inner corner.
@@ -225,15 +233,15 @@ func Default() Params {
 			}},
 		},
 
-		Fittings: fittings(bedW-hi, bedS-hi, bathW+hi, bathS+hi, x1, x2, y1, y2),
+		Fittings: fittings(bedW-hi, bathW+hi, bathS+hi, x1, x2, y1, y2),
 	}
 }
 
-// fittings lists the kitchen units and the two mbaigo-controlled device
-// families. The arguments are the room faces they are measured against:
-// the kitchen's east wall and the bedroom's south wall, the bathroom's west and
-// south walls, and the envelope's inside faces.
-func fittings(kitchenE, bedroomS, bathW, bathS, x1, x2, y1, y2 float64) []Fitting {
+// fittings lists the kitchen units, the plumbing and the two mbaigo-controlled
+// device families. The arguments are the room faces they are measured against:
+// the kitchen's east wall, the bathroom's west and south walls, and the
+// envelope's inside faces.
+func fittings(kitchenE, bathW, bathS, x1, x2, y1, y2 float64) []Fitting {
 	const (
 		counter   = 600.0 // depth of the kitchen units
 		worktop   = 900.0
@@ -260,7 +268,7 @@ func fittings(kitchenE, bedroomS, bathW, bathS, x1, x2, y1, y2 float64) []Fittin
 			X1: 0, Y1: y2 - counter, X2: kitchenE, Y2: y2, Base: 0, Top: worktop},
 		{Name: "Kitchen worktop (west wall)", Kind: "counter",
 			X1: 0, Y1: cookerN, X2: counter, Y2: y2, Base: 0, Top: worktop},
-		{Name: "Sink", Kind: "sink",
+		{Name: "Kitchen sink", Kind: "sink", Networks: []string{"Cold water", "Hot water"},
 			X1: 775, Y1: y2 - 540, X2: 1575, Y2: y2 - 60, Base: 820, Top: worktop},
 		{Name: "Cooker", Kind: "cooker",
 			X1: 0, Y1: cookerS, X2: counter, Y2: cookerN, Base: 0, Top: worktop},
@@ -289,10 +297,39 @@ func fittings(kitchenE, bedroomS, bathW, bathS, x1, x2, y1, y2 float64) []Fittin
 			X1: x2 - 45, Y1: 2795, X2: x2, Y2: 2865, Base: 200, Top: 310},
 
 		{Name: "Heater, bathroom", Kind: "heater", System: "BeeKeeper", Watts: 1000,
-			X1: 6690, Y1: bathS, X2: 7290, Y2: bathS + panel, Base: heaterZ0, Top: heaterZ1,
+			X1: 6264, Y1: bathS, X2: 6864, Y2: bathS + panel, Base: heaterZ0, Top: heaterZ1,
 			Note: "On the wall opposite the bathroom window"},
 		{Name: "Plug, bathroom heater", Kind: "plug", System: "BeeKeeper",
-			X1: 7420, Y1: bathS, X2: 7490, Y2: bathS + 45, Base: 200, Top: 310},
+			X1: 6964, Y1: bathS, X2: 7034, Y2: bathS + 45, Base: 200, Top: 310},
+
+		// Plumbing. The cold feed enters under the kitchen sink and the 30 litre
+		// heater sits in the hallway between the bathroom and the bedroom, so
+		// everything hot is fed from there.
+		{Name: "Cold water service entry", Kind: "pipe", Networks: []string{"Cold water"},
+			X1: 1125, Y1: 8250, X2: 1225, Y2: 8350, Base: -150, Top: 600,
+			Note: "Enters the building under the kitchen sink"},
+		{Name: "Water heater, 30 l", Kind: "waterheater",
+			Networks: []string{"Cold water", "Hot water"},
+			X1:       5340, Y1: 8200, X2: 5740, Y2: 8600, Base: 1200, Top: 1800,
+			Note: "30 litre electric storage heater; wall-hung, height ASSUMED"},
+
+		{Name: "Bathroom basin", Kind: "basin", Networks: []string{"Cold water", "Hot water"},
+			X1: 6339, Y1: 8250, X2: 6789, Y2: y2, Base: 780, Top: 900,
+			Note: "Under the bathroom window"},
+		{Name: "Shower cabin", Kind: "shower", Networks: []string{"Cold water", "Hot water"},
+			X1: 7140, Y1: 7800, X2: x2, Y2: y2, Base: 0, Top: 2000,
+			Note: "In the corner of the two outside walls; 800 x 800 ASSUMED"},
+
+		// The Cinderella burns its waste, so it joins no water network at all,
+		// only the flue that carries the exhaust outside.
+		{Name: "Toilet, Cinderella Classic", Kind: "toilet", Networks: []string{"Toilet exhaust"},
+			X1: 7420, Y1: 7150, X2: x2, Y2: 7800, Base: 0, Top: 600,
+			Note: "Electric incinerating toilet: no water supply and no drain. Size ASSUMED"},
+		{Name: "Toilet flue, riser", Kind: "duct", Networks: []string{"Toilet exhaust"},
+			X1: 7830, Y1: 7350, X2: 7940, Y2: 7460, Base: 600, Top: 1850},
+		{Name: "Toilet flue, through the east wall", Kind: "duct", Networks: []string{"Toilet exhaust"},
+			X1: 7830, Y1: 7350, X2: 8150, Y2: 7460, Base: 1740, Top: 1850,
+			Note: "Discharges outside; route through the wall rather than the roof ASSUMED"},
 
 		// Weather: a NetAtmo station reporting to Meteorologue.
 		{Name: "NetAtmo base module", Kind: "sensor", System: "Meteorologue",

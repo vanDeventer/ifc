@@ -3,6 +3,7 @@ package cottage
 import (
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/vanDeventer/ifc/internal/ifc"
 )
@@ -14,6 +15,21 @@ func ifcClass(f Fitting) (entity string, predefined string) {
 	switch f.Kind {
 	case "sink":
 		return "IFCSANITARYTERMINAL", "SINK"
+	case "basin":
+		return "IFCSANITARYTERMINAL", "WASHHANDBASIN"
+	case "shower":
+		return "IFCSANITARYTERMINAL", "SHOWER"
+	case "toilet":
+		// Classified as a WC even though it burns rather than flushes: it is
+		// the fixture a plumber or a room schedule is looking for. What makes
+		// it unusual is in its property set instead.
+		return "IFCSANITARYTERMINAL", "TOILETPAN"
+	case "waterheater":
+		return "IFCELECTRICAPPLIANCE", "FREESTANDINGWATERHEATER"
+	case "pipe":
+		return "IFCPIPESEGMENT", "RIGIDSEGMENT"
+	case "duct":
+		return "IFCDUCTSEGMENT", "RIGIDSEGMENT"
 	case "cooker":
 		return "IFCELECTRICAPPLIANCE", "ELECTRICCOOKER"
 	case "fridge":
@@ -38,6 +54,7 @@ func ifcClass(f Fitting) (entity string, predefined string) {
 // gathers the devices into one IfcSystem per mbaigo system that owns them.
 func (b *builder) fittings(p Params) {
 	members := map[string][]ifc.Ref{}
+	networks := map[string][]ifc.Ref{}
 
 	for _, ft := range p.Fittings {
 		entity, predefined := ifcClass(ft)
@@ -64,23 +81,55 @@ func (b *builder) fittings(p Params) {
 		if ft.System != "" {
 			members[ft.System] = append(members[ft.System], r)
 		}
+		for _, n := range ft.Networks {
+			networks[n] = append(networks[n], r)
+		}
 	}
 
-	// One IfcSystem per owning mbaigo system, in a stable order.
-	names := make([]string, 0, len(members))
-	for n := range members {
-		names = append(names, n)
-	}
-	sort.Strings(names)
-
-	for _, name := range names {
+	// One IfcSystem per owning mbaigo system: software that drives devices.
+	for _, name := range sortedKeys(members) {
 		sys := b.f.Add("IFCSYSTEM", ifc.GUID("system-"+name), b.owner, name,
 			systemDescription(name), "mbaigo")
-		b.f.Add("IFCRELASSIGNSTOGROUP", ifc.GUID("assign-"+name), b.owner,
-			ifc.Null{}, ifc.Null{}, members[name], ifc.Null{}, sys)
-		b.f.Add("IFCRELSERVICESBUILDINGS", ifc.GUID("serves-"+name), b.owner,
-			ifc.Null{}, ifc.Null{}, sys, []ifc.Ref{b.building})
+		b.serves(sys, name, members[name])
 	}
+
+	// One IfcDistributionSystem per network: what is physically connected to
+	// what, even though the runs between them are not modelled.
+	for _, name := range sortedKeys(networks) {
+		sys := b.f.Add("IFCDISTRIBUTIONSYSTEM", ifc.GUID("network-"+name), b.owner, name,
+			systemDescription(name), ifc.Null{}, ifc.Null{}, ifc.Enum(networkType(name)))
+		b.serves(sys, name, networks[name])
+	}
+}
+
+// serves assigns members to a system and records that it serves the building.
+func (b *builder) serves(sys ifc.Ref, name string, members []ifc.Ref) {
+	b.f.Add("IFCRELASSIGNSTOGROUP", ifc.GUID("assign-"+name), b.owner,
+		ifc.Null{}, ifc.Null{}, members, ifc.Null{}, sys)
+	b.f.Add("IFCRELSERVICESBUILDINGS", ifc.GUID("serves-"+name), b.owner,
+		ifc.Null{}, ifc.Null{}, sys, []ifc.Ref{b.building})
+}
+
+func sortedKeys(m map[string][]ifc.Ref) []string {
+	out := make([]string, 0, len(m))
+	for k := range m {
+		out = append(out, k)
+	}
+	sort.Strings(out)
+	return out
+}
+
+// networkType is the IfcDistributionSystemEnum member for a named network.
+func networkType(name string) string {
+	switch name {
+	case "Cold water":
+		return "DOMESTICCOLDWATER"
+	case "Hot water":
+		return "DOMESTICHOTWATER"
+	case "Toilet exhaust":
+		return "EXHAUST"
+	}
+	return "NOTDEFINED"
 }
 
 func systemDescription(name string) any {
@@ -89,6 +138,12 @@ func systemDescription(name string) any {
 		return "mbaigo system switching the heaters through Aqara plugs"
 	case "Meteorologue":
 		return "mbaigo system reading the NetAtmo weather station"
+	case "Cold water":
+		return "Mains cold water, entering under the kitchen sink"
+	case "Hot water":
+		return "Fed from the 30 litre electric heater in the hallway"
+	case "Toilet exhaust":
+		return "Flue carrying the incinerating toilet's exhaust outside"
 	}
 	return ifc.Null{}
 }
@@ -119,6 +174,16 @@ func fittingProps(f Fitting) []prop {
 		out = append(out, prop{"DeviceType", ifc.Label("Aqara smart plug")})
 	case "sensor":
 		out = append(out, prop{"DeviceType", ifc.Label("NetAtmo module")})
+	case "toilet":
+		out = append(out,
+			prop{"Model", ifc.Label("Cinderella Classic")},
+			prop{"WaterSupply", ifc.Label("None")},
+			prop{"WasteDisposal", ifc.Label("Incineration, electric")})
+	case "waterheater":
+		out = append(out, prop{"StorageCapacity", ifc.Volume(0.030)})
+	}
+	if len(f.Networks) > 0 {
+		out = append(out, prop{"Networks", ifc.Label(strings.Join(f.Networks, ", "))})
 	}
 	if f.Note != "" {
 		out = append(out, prop{"Note", ifc.Text(f.Note)})

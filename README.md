@@ -133,31 +133,47 @@ Inside floor area 50.10 m². The four clear widths along the back wall
 (1900 + 1000 + 2690 + 2350) sum to exactly 7940, so each partition is centred on
 its boundary and takes 47.5 mm off the two rooms it separates.
 
-## Fittings, heating and sensors
+## Fittings, plumbing, heating and sensors
 
-Beyond the building itself the model carries the kitchen units, the electric
-heating and the weather station, each as its proper IFC entity rather than as
-decoration:
+Beyond the building itself the model carries the kitchen units, the plumbing,
+the electric heating and the weather station, each as its proper IFC entity
+rather than as decoration:
 
 | | |
 |---|---|
-| `IfcSanitaryTerminal` | the sink, in the run under the back window |
-| `IfcElectricAppliance` | the cooker and the full-height fridge, against the west wall |
+| `IfcSanitaryTerminal` | kitchen sink, bathroom basin, shower cabin, toilet |
+| `IfcElectricAppliance` | cooker, full-height fridge, 30 litre water heater |
+| `IfcPipeSegment` | the cold water service entry, under the kitchen sink |
+| `IfcDuctSegment` | the toilet flue, rising and then out through the east wall |
 | `IfcSpaceHeater` | three 2000 W panels under windows, one 1000 W in the bathroom |
 | `IfcOutlet` | the Aqara plug that switches each heater |
 | `IfcSensor` | four NetAtmo modules: indoor, outdoor north, bathroom, and the wind gauge 50 m out |
 
-The two mbaigo systems are in the model as `IfcSystem`, with each device
-assigned to its owner and a property set naming it:
+Two kinds of system group them. The mbaigo systems are `IfcSystem` — software
+that drives devices — and the building's networks are `IfcDistributionSystem`,
+which say what is connected to what:
 
 ```
-BeeKeeper     switches the heaters through Aqara plugs
-Meteorologue  reads the NetAtmo weather station
+BeeKeeper       IfcSystem              switches the heaters through Aqara plugs
+Meteorologue    IfcSystem              reads the NetAtmo weather station
+Cold water      DOMESTICCOLDWATER      entry, heater, sink, basin, shower
+Hot water       DOMESTICHOTWATER       heater, sink, basin, shower
+Toilet exhaust  EXHAUST                toilet and the two flue segments
 ```
 
 So a system can find its own devices by walking `IfcRelAssignsToGroup` from the
-`IfcSystem` named after it, and read `NominalPower` off each heater, without
-knowing anything about this repository's Go types.
+group named after it, and read `NominalPower` off each heater, without knowing
+anything about this repository's Go types.
+
+The Cinderella incinerates rather than flushes, so it joins no water network at
+all — only the flue. It is still classified `TOILETPAN`, because that is the
+fixture a room schedule looks for; what makes it unusual is in its properties
+(`WaterSupply: None`, `WasteDisposal: Incineration, electric`).
+
+Pipe *runs* are not modelled. Where the fixtures are and what they are connected
+to is known; how the pipes get there is not, and guessing would be worse than
+leaving it out. There is no drainage either, though the sinks and shower must
+have some.
 
 One arithmetic conflict is left deliberately visible. The cooker sits 1400 mm
 from the back wall as first described, and a 600 cooker followed by a 600 fridge
@@ -178,6 +194,12 @@ blue entrance door.
 Assumed outright, and worth correcting: wall thicknesses (170 exterior, 95
 partitions), the 150 mm slab, the 400 mm eave overhang, and every window
 position on the back wall, of which there is no photograph.
+
+One of those guesses has since been corrected by the plumbing rather than by a
+measurement. The bathroom window was centred in the room until the shower cabin
+arrived in the corner of the two outside walls, which is the same corner; the
+window has moved west to sit in what is left of that wall, with the basin under
+it. Fixtures are a constraint on the openings, not just contents of the room.
 
 The roofs are massing, not layered constructions, and the two interpenetrate at
 the junction rather than meeting in a modelled valley.

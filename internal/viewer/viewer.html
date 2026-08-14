@@ -432,6 +432,7 @@ const LAYERS = [
   { key: "windows",   name: "Windows",        color: [0.52, 0.66, 0.72], on: true },
   { key: "doors",     name: "Doors",          color: [0.24, 0.38, 0.47], on: true },
   { key: "fittings",  name: "Kitchen",        color: [0.78, 0.70, 0.58], on: true },
+  { key: "plumbing",  name: "Plumbing",       color: [0.90, 0.92, 0.94], on: true },
   { key: "heating",   name: "Heating",        color: [0.93, 0.51, 0.21], on: true },
   { key: "sensors",   name: "Sensors",        color: [0.22, 0.71, 0.61], on: true },
   { key: "site",      name: "Ground",         color: [0.95, 0.96, 0.97], on: true },
@@ -477,11 +478,20 @@ function build() {
       layer = "rooms";
       color = ROOM_COLORS[counts.rooms % ROOM_COLORS.length];
       counts.rooms++;
-    } else if (e.type === "IFCFURNISHINGELEMENT" || e.type === "IFCSANITARYTERMINAL") {
+    } else if (e.type === "IFCFURNISHINGELEMENT") {
       layer = "fittings";
-      if (e.type === "IFCSANITARYTERMINAL") color = [0.86, 0.87, 0.88];
+    } else if (e.type === "IFCSANITARYTERMINAL") {
+      layer = "plumbing"; // sanitary ware is white, whichever room it is in
+    } else if (e.type === "IFCPIPESEGMENT") {
+      layer = "plumbing"; color = [0.31, 0.53, 0.79]; // cold supply
+    } else if (e.type === "IFCDUCTSEGMENT") {
+      layer = "plumbing"; color = [0.60, 0.62, 0.64];
     } else if (e.type === "IFCELECTRICAPPLIANCE") {
-      layer = "fittings"; color = [0.71, 0.73, 0.75]; // brushed steel
+      // The water heater belongs with the plumbing; the cooker and fridge
+      // belong with the kitchen units.
+      const kind = enumOf(e.args[8]);
+      layer = kind.includes("WATERHEATER") ? "plumbing" : "fittings";
+      color = [0.71, 0.73, 0.75]; // brushed steel
     } else if (e.type === "IFCSPACEHEATER" || e.type === "IFCOUTLET") {
       layer = "heating"; counts.devices++;
       if (e.type === "IFCOUTLET") color = [0.96, 0.78, 0.35];
@@ -492,7 +502,11 @@ function build() {
     // Heaters and sensors earn a label, so the plan says which is which. The
     // plugs do not: each one sits beside the heater it switches, and labelling
     // them only crowds the drawing.
-    if (e.type === "IFCSPACEHEATER" || layer === "sensors") {
+    // The water heater and the incoming main are worth finding on a plan; the
+    // basin and the shower are obvious from their shape.
+    const named = e.type === "IFCSPACEHEATER" || layer === "sensors" ||
+      e.type === "IFCPIPESEGMENT" || (e.type === "IFCELECTRICAPPLIANCE" && layer === "plumbing");
+    if (named) {
       const at = placementOrigin(ref(e.args[5]));
       if (at) labels.push({ text: str(e.args[2]), at, layer });
     }

@@ -44,6 +44,9 @@ func Label(s string) Typed  { return Typed{"IFCLABEL", s} }
 func Text(s string) Typed   { return Typed{"IFCTEXT", s} }
 func Power(w float64) Typed { return Typed{"IFCPOWERMEASURE", w} }
 
+// Volume is in cubic metres, matching the unit assignment.
+func Volume(m3 float64) Typed { return Typed{"IFCVOLUMEMEASURE", m3} }
+
 // File collects entity instances in the order they are added.
 type File struct {
 	Description  string
