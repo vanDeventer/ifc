@@ -45,10 +45,21 @@ type Params struct {
 	// clockwise from true north. NNE is 22.5.
 	Facing float64
 
-	Walls    []Wall
-	Openings []Opening
-	Spaces   []Space
-	Fittings []Fitting
+	Walls        []Wall
+	Openings     []Opening
+	Spaces       []Space
+	Fittings     []Fitting
+	Penetrations []Penetration
+}
+
+// Penetration is a hole cut through a named element by something passing
+// through it, such as the flue through the roof overhang. Unlike an Opening it
+// is not filled by a door or a window.
+type Penetration struct {
+	Name           string
+	Host           string // the name of the wall or roof it passes through
+	X1, Y1, X2, Y2 float64
+	Base, Top      float64
 }
 
 // Wall is a straight wall segment given by the centreline endpoints of its
@@ -239,6 +250,11 @@ func Default() Params {
 		},
 
 		Fittings: fittings(bedW-hi, bathW+hi, bathS+hi, x1, x2, y1, y2),
+
+		Penetrations: []Penetration{
+			{Name: "Flue through the roof overhang", Host: "Roof over base",
+				X1: 8175, Y1: 7400, X2: 8325, Y2: 7550, Base: 1900, Top: 2800},
+		},
 	}
 }
 
@@ -263,13 +279,14 @@ func fittings(kitchenE, bathW, bathS, x1, x2, y1, y2 float64) []Fitting {
 
 		// Pipework. The two water mains run side by side along the inside of
 		// the back wall, low down; sizes are nominal.
-		main   = 28.0
-		branch = 22.0
-		waste  = 75.0
-		flue   = 110.0
-		coldY  = 8555.0 // hard against the back wall
-		hotY   = 8480.0 // parallel to it, 75 mm in front
-		runZ   = 325.0
+		main    = 28.0
+		branch  = 22.0
+		waste   = 75.0
+		flue    = 110.0
+		eaveTop = 2200.0 // the base leg's wall top, which the flue clears by 1 m
+		coldY   = 8555.0 // hard against the back wall
+		hotY    = 8480.0 // parallel to it, 75 mm in front
+		runZ    = 325.0
 
 		// The greywater pit, 10 m off the north-east corner of the building
 		// along the diagonal.
@@ -334,10 +351,10 @@ func fittings(kitchenE, bathW, bathS, x1, x2, y1, y2 float64) []Fitting {
 			Networks: []string{"Cold water", "Hot water", "Greywater"},
 			X1:       6339, Y1: 8250, X2: 6789, Y2: y2, Base: 780, Top: 900,
 			Note: "Under the bathroom window"},
-		{Name: "Shower cabin", Kind: "shower", Networks: []string{"Cold water", "Hot water"},
-			X1: 7140, Y1: 7800, X2: x2, Y2: y2, Base: 0, Top: 2000,
-			Note: "In the corner of the two outside walls; 800 x 800 ASSUMED. Its waste " +
-				"is not modelled: only the two sink drains were described"},
+		{Name: "Shower cabin", Kind: "shower",
+			Networks: []string{"Cold water", "Hot water", "Greywater"},
+			X1:       7140, Y1: 7800, X2: x2, Y2: y2, Base: 0, Top: 2000,
+			Note: "In the corner of the two outside walls; 800 x 800 ASSUMED"},
 
 		// The Cinderella burns its waste, so it joins no water network at all,
 		// only the flue, which runs up the outside of the wall right behind it.
@@ -347,8 +364,8 @@ func fittings(kitchenE, bathW, bathS, x1, x2, y1, y2 float64) []Fitting {
 		{Name: "Toilet flue, through the east wall", Kind: "duct", Networks: []string{"Toilet exhaust"},
 			From: [3]float64{7900, 7475, 520}, To: [3]float64{8250, 7475, 520}, Dia: flue},
 		{Name: "Toilet flue, riser outside", Kind: "duct", Networks: []string{"Toilet exhaust"},
-			From: [3]float64{8250, 7475, 520}, To: [3]float64{8250, 7475, 2000}, Dia: flue,
-			Note: "Stops under the eave: where it terminates above the roof is not known"},
+			From: [3]float64{8250, 7475, 520}, To: [3]float64{8250, 7475, eaveTop + 1000}, Dia: flue,
+			Note: "Terminates 1 m above the eave, passing through the roof overhang"},
 
 		// Cold: in under the kitchen sink, then east along the outer wall and
 		// through the bedroom to the heater, the basin and the shower.
@@ -387,6 +404,10 @@ func fittings(kitchenE, bathW, bathS, x1, x2, y1, y2 float64) []Fitting {
 			From: [3]float64{1350, 8300, -650}, To: [3]float64{pitX, pitY, -1100}, Dia: waste},
 		{Name: "Bathroom basin drain", Kind: "pipe", Networks: []string{"Greywater"},
 			From: [3]float64{6564, 8350, 760}, To: [3]float64{6564, 8350, -650}, Dia: waste},
+		{Name: "Shower drain", Kind: "pipe", Networks: []string{"Greywater"},
+			From: [3]float64{7540, 8200, 0}, To: [3]float64{7540, 8200, -650}, Dia: waste},
+		{Name: "Shower drain, joining the bathroom drain", Kind: "pipe", Networks: []string{"Greywater"},
+			From: [3]float64{7540, 8200, -650}, To: [3]float64{6564, 8350, -650}, Dia: waste},
 		{Name: "Bathroom drain to the pit", Kind: "pipe", Networks: []string{"Greywater"},
 			From: [3]float64{6564, 8350, -650}, To: [3]float64{pitX, pitY, -1100}, Dia: waste},
 		{Name: "Greywater pit", Kind: "pit", Networks: []string{"Greywater"},

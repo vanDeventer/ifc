@@ -84,11 +84,16 @@ func TestBuild(t *testing.T) {
 		}
 	}
 
-	// Every opening must be voided out of a wall and filled by a window or door.
+	// Every opening is voided out of its wall and filled by a window or a door.
+	// Penetrations are voided too, but nothing fills them.
 	voids := strings.Count(out, "IFCRELVOIDSELEMENT(")
 	fills := strings.Count(out, "IFCRELFILLSELEMENT(")
-	if voids != len(p.Openings) || fills != len(p.Openings) {
-		t.Errorf("%d openings gave %d voids and %d fills", len(p.Openings), voids, fills)
+	if want := len(p.Openings) + len(p.Penetrations); voids != want {
+		t.Errorf("%d openings and %d penetrations gave %d voids, expected %d",
+			len(p.Openings), len(p.Penetrations), voids, want)
+	}
+	if fills != len(p.Openings) {
+		t.Errorf("%d openings gave %d fills", len(p.Openings), fills)
 	}
 
 	// GUIDs are 22 characters and must not collide.

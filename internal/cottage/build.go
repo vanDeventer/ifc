@@ -16,13 +16,14 @@ type builder struct {
 	floor    ifc.Ref // placement of the storey, and of every element in it
 	building ifc.Ref
 
-	elements []ifc.Ref // everything contained in the storey
+	elements []ifc.Ref          // everything contained in the storey
+	named    map[string]ifc.Ref // elements a penetration can name as its host
 }
 
 // Build turns the parameters into a complete IFC4 model.
 func Build(p Params, stamp time.Time) *ifc.File {
 	f := ifc.New(p.Name+".ifc", "van Deventer", "Luleå University of Technology", stamp)
-	b := &builder{f: f}
+	b := &builder{f: f, named: map[string]ifc.Ref{}}
 
 	person := f.Add("IFCPERSON", ifc.Null{}, "van Deventer", "Jan", ifc.Null{}, ifc.Null{}, ifc.Null{}, ifc.Null{}, ifc.Null{})
 	org := f.Add("IFCORGANIZATION", ifc.Null{}, "Luleå University of Technology", ifc.Null{}, ifc.Null{}, ifc.Null{})
@@ -75,6 +76,7 @@ func Build(p Params, stamp time.Time) *ifc.File {
 	b.walls(p)
 	b.roof(p)
 	b.fittings(p)
+	b.penetrations(p)
 
 	f.Add("IFCRELCONTAINEDINSPATIALSTRUCTURE", ifc.GUID("contained"), b.owner,
 		ifc.Null{}, ifc.Null{}, b.elements, storey)
@@ -142,6 +144,7 @@ func (b *builder) walls(p Params) {
 		r := b.f.Add("IFCWALL", ifc.GUID("wall-"+w.Name), b.owner, w.Name, ifc.Null{}, ifc.Null{},
 			pl, shape, ifc.Null{}, kind)
 		b.elements = append(b.elements, r)
+		b.named[w.Name] = r
 		byName[w.Name] = &placed{Wall: w, ref: r, pl: pl, len: length}
 	}
 
@@ -244,6 +247,7 @@ func (b *builder) roof(p Params) {
 		r := b.f.Add("IFCROOF", ifc.GUID("roof-base"), b.owner, "Roof over base", ifc.Null{}, ifc.Null{},
 			b.f.PlacedAt(b.floor, 0, 0, 0), b.f.BodyShapeOf(b.body, "Brep", brep), ifc.Null{}, ifc.Enum("HIP_ROOF"))
 		b.elements = append(b.elements, r)
+		b.named["Roof over base"] = r
 	}
 
 	// Rise leg: a gable with its ridge north-south. Here the roof is a covering
@@ -271,6 +275,7 @@ func (b *builder) roof(p Params) {
 		r := b.f.Add("IFCROOF", ifc.GUID("roof-rise"), b.owner, "Roof over rise", ifc.Null{}, ifc.Null{},
 			b.f.PlacedAt(b.floor, 0, 0, 0), b.f.BodyShape(b.body, solid), ifc.Null{}, ifc.Enum("GABLE_ROOF"))
 		b.elements = append(b.elements, r)
+		b.named["Roof over rise"] = r
 
 		// The triangle of boarding between the wall top and the roof.
 		gable := b.f.PolyProfile("Gable", [][2]float64{
@@ -295,4 +300,22 @@ func (b *builder) spaces(p Params) []ifc.Ref {
 		out = append(out, r)
 	}
 	return out
+}
+
+// penetrations cuts holes through named elements for things that pass through
+// them but do not fill them, such as the flue crossing the roof overhang.
+func (b *builder) penetrations(p Params) {
+	for _, pen := range p.Penetrations {
+		host, ok := b.named[pen.Host]
+		if !ok {
+			panic(fmt.Sprintf("cottage: penetration %q names unknown host %q", pen.Name, pen.Host))
+		}
+		prof := b.f.RectProfile(pen.Name, 0, 0, pen.X2-pen.X1, pen.Y2-pen.Y1)
+		solid := b.f.ExtrudeUp(prof, 0, pen.Top-pen.Base)
+		pl := b.f.PlacedAt(b.floor, (pen.X1+pen.X2)/2, (pen.Y1+pen.Y2)/2, pen.Base)
+		void := b.f.Add("IFCOPENINGELEMENT", ifc.GUID("pen-"+pen.Name), b.owner, pen.Name,
+			ifc.Null{}, ifc.Null{}, pl, b.f.BodyShape(b.body, solid), ifc.Null{}, ifc.Enum("OPENING"))
+		b.f.Add("IFCRELVOIDSELEMENT", ifc.GUID("pen-voids-"+pen.Name), b.owner,
+			ifc.Null{}, ifc.Null{}, host, void)
+	}
 }
