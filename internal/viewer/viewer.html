@@ -456,6 +456,26 @@ function build() {
     voidsByWall.get(wall).push(opening);
   }
 
+  // Which distribution networks each element belongs to, read out of the
+  // model's own IfcDistributionSystem groups rather than guessed from names.
+  const netOf = new Map();
+  for (const [, e] of ents) {
+    if (e.type !== "IFCRELASSIGNSTOGROUP") continue;
+    const g = ents.get(ref(e.args[6]));
+    if (!g || g.type !== "IFCDISTRIBUTIONSYSTEM") continue;
+    for (const m of list(e.args[4])) {
+      const id = ref(m);
+      if (!netOf.has(id)) netOf.set(id, []);
+      netOf.get(id).push(str(g.args[2]));
+    }
+  }
+  const NET_COLORS = {
+    "Hot water": [0.78, 0.31, 0.26],
+    "Cold water": [0.29, 0.51, 0.78],
+    "Greywater": [0.46, 0.50, 0.44],
+    "Toilet exhaust": [0.58, 0.60, 0.62],
+  };
+
   const colorOf = k => LAYERS.find(l => l.key === k).color;
   let counts = { walls: 0, windows: 0, doors: 0, rooms: 0, devices: 0 };
 
@@ -482,10 +502,12 @@ function build() {
       layer = "fittings";
     } else if (e.type === "IFCSANITARYTERMINAL") {
       layer = "plumbing"; // sanitary ware is white, whichever room it is in
-    } else if (e.type === "IFCPIPESEGMENT") {
-      layer = "plumbing"; color = [0.31, 0.53, 0.79]; // cold supply
-    } else if (e.type === "IFCDUCTSEGMENT") {
-      layer = "plumbing"; color = [0.60, 0.62, 0.64];
+    } else if (e.type === "IFCPIPESEGMENT" || e.type === "IFCDUCTSEGMENT") {
+      // A run takes the colour of the network that owns it.
+      layer = "plumbing";
+      for (const n of netOf.get(id) || []) if (NET_COLORS[n]) { color = NET_COLORS[n]; break; }
+    } else if (e.type === "IFCDISTRIBUTIONCHAMBERELEMENT") {
+      layer = "plumbing"; color = [0.52, 0.53, 0.51]; // concrete
     } else if (e.type === "IFCELECTRICAPPLIANCE") {
       // The water heater belongs with the plumbing; the cooker and fridge
       // belong with the kitchen units.
@@ -505,7 +527,8 @@ function build() {
     // The water heater and the incoming main are worth finding on a plan; the
     // basin and the shower are obvious from their shape.
     const named = e.type === "IFCSPACEHEATER" || layer === "sensors" ||
-      e.type === "IFCPIPESEGMENT" || (e.type === "IFCELECTRICAPPLIANCE" && layer === "plumbing");
+      e.type === "IFCDISTRIBUTIONCHAMBERELEMENT" ||
+      (e.type === "IFCELECTRICAPPLIANCE" && layer === "plumbing");
     if (named) {
       const at = placementOrigin(ref(e.args[5]));
       if (at) labels.push({ text: str(e.args[2]), at, layer });
@@ -678,8 +701,9 @@ function frame(view) {
     front:  { yaw: -Math.PI / 2, pitch: 0.12 },
     back:   { yaw: Math.PI / 2, pitch: 0.12 },
     layout: { yaw: -Math.PI / 2, pitch: 1.5533, hide: ["roof"], show: ["rooms"] },
-    // The wind gauge stands 50 m out, so it needs a frame of its own.
-    site:   { yaw: -Math.PI / 2, pitch: 0.62, whole: true, zoom: 0.68 },
+    // The wind gauge stands 50 m out and the greywater pit is buried 10 m the
+    // other way, so this frames the whole site and drops the ground with it.
+    site:   { yaw: -Math.PI / 2, pitch: 0.95, whole: true, zoom: 0.62, hide: ["site"] },
   };
   const v = views[view] || views.iso;
   const box = v.whole ? siteBounds : bounds;

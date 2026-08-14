@@ -2,6 +2,7 @@ package cottage
 
 import (
 	"fmt"
+	"math"
 	"sort"
 	"strings"
 
@@ -44,6 +45,8 @@ func ifcClass(f Fitting) (entity string, predefined string) {
 			s = "NOTDEFINED"
 		}
 		return "IFCSENSOR", s
+	case "pit":
+		return "IFCDISTRIBUTIONCHAMBERELEMENT", "SUMP"
 	case "counter", "mast":
 		return "IFCFURNISHINGELEMENT", ""
 	}
@@ -59,11 +62,23 @@ func (b *builder) fittings(p Params) {
 	for _, ft := range p.Fittings {
 		entity, predefined := ifcClass(ft)
 
-		cx, cy := (ft.X1+ft.X2)/2, (ft.Y1+ft.Y2)/2
-		prof := b.f.RectProfile(ft.Name, 0, 0, ft.X2-ft.X1, ft.Y2-ft.Y1)
-		solid := b.f.ExtrudeUp(prof, 0, ft.Top-ft.Base)
-		shape := b.f.BodyShape(b.body, solid)
-		pl := b.f.PlacedAt(b.floor, cx, cy, ft.Base)
+		var pl, shape ifc.Ref
+		if ft.Dia > 0 {
+			// A run: sweep the section along the centreline.
+			dx, dy, dz := ft.To[0]-ft.From[0], ft.To[1]-ft.From[1], ft.To[2]-ft.From[2]
+			length := math.Sqrt(dx*dx + dy*dy + dz*dz)
+			if length == 0 {
+				panic(fmt.Sprintf("cottage: run %q has zero length", ft.Name))
+			}
+			pl = b.f.PlacedAlongRun(b.floor, ft.From[0], ft.From[1], ft.From[2],
+				dx/length, dy/length, dz/length)
+			prof := b.f.RectProfile(ft.Name, 0, 0, ft.Dia, ft.Dia)
+			shape = b.f.BodyShape(b.body, b.f.ExtrudeUp(prof, 0, length))
+		} else {
+			prof := b.f.RectProfile(ft.Name, 0, 0, ft.X2-ft.X1, ft.Y2-ft.Y1)
+			shape = b.f.BodyShape(b.body, b.f.ExtrudeUp(prof, 0, ft.Top-ft.Base))
+			pl = b.f.PlacedAt(b.floor, (ft.X1+ft.X2)/2, (ft.Y1+ft.Y2)/2, ft.Base)
+		}
 
 		args := []any{
 			ifc.GUID("fitting-" + ft.Name), b.owner, ft.Name, ifc.Null{},
@@ -128,6 +143,8 @@ func networkType(name string) string {
 		return "DOMESTICHOTWATER"
 	case "Toilet exhaust":
 		return "EXHAUST"
+	case "Greywater":
+		return "WASTEWATER"
 	}
 	return "NOTDEFINED"
 }
@@ -144,6 +161,8 @@ func systemDescription(name string) any {
 		return "Fed from the 30 litre electric heater in the hallway"
 	case "Toilet exhaust":
 		return "Flue carrying the incinerating toilet's exhaust outside"
+	case "Greywater":
+		return "Waste from the two sinks, to a pit 10 m off the north-east corner"
 	}
 	return ifc.Null{}
 }

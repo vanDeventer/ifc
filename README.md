@@ -143,8 +143,9 @@ rather than as decoration:
 |---|---|
 | `IfcSanitaryTerminal` | kitchen sink, bathroom basin, shower cabin, toilet |
 | `IfcElectricAppliance` | cooker, full-height fridge, 30 litre water heater |
-| `IfcPipeSegment` | the cold water service entry, under the kitchen sink |
-| `IfcDuctSegment` | the toilet flue, rising and then out through the east wall |
+| `IfcPipeSegment` | the water mains, their branches and the two buried drains |
+| `IfcDistributionChamberElement` | the greywater pit, 10 m off the north-east corner |
+| `IfcDuctSegment` | the toilet flue, out through the east wall and up outside |
 | `IfcSpaceHeater` | three 2000 W panels under windows, one 1000 W in the bathroom |
 | `IfcOutlet` | the Aqara plug that switches each heater |
 | `IfcSensor` | four NetAtmo modules: indoor, outdoor north, bathroom, and the wind gauge 50 m out |
@@ -156,8 +157,9 @@ which say what is connected to what:
 ```
 BeeKeeper       IfcSystem              switches the heaters through Aqara plugs
 Meteorologue    IfcSystem              reads the NetAtmo weather station
-Cold water      DOMESTICCOLDWATER      entry, heater, sink, basin, shower
-Hot water       DOMESTICHOTWATER       heater, sink, basin, shower
+Cold water      DOMESTICCOLDWATER      entry, main, branches, heater, fixtures
+Hot water       DOMESTICHOTWATER       heater, mains both ways, branches, fixtures
+Greywater       WASTEWATER             two sink drains and the pit
 Toilet exhaust  EXHAUST                toilet and the two flue segments
 ```
 
@@ -170,10 +172,24 @@ all — only the flue. It is still classified `TOILETPAN`, because that is the
 fixture a room schedule looks for; what makes it unusual is in its properties
 (`WaterSupply: None`, `WasteDisposal: Incineration, electric`).
 
-Pipe *runs* are not modelled. Where the fixtures are and what they are connected
-to is known; how the pipes get there is not, and guessing would be worse than
-leaving it out. There is no drainage either, though the sinks and shower must
-have some.
+The runs are modelled, not just the fixtures. Cold comes in under the kitchen
+sink, straight into it, then east along the inside of the back wall and through
+the bedroom to the heater, the basin and the shower; hot leaves the heater and
+comes back along the same wall, parallel to the cold, 75 mm in front of it. A
+drain under each sink drops below the slab and runs out to the pit.
+
+A pipe is given as a centreline and a diameter rather than a box, which is what
+lets the drains run diagonally out to the pit. `IfcPipeSegment` and
+`IfcDuctSegment` are the only fittings that work that way; everything else is
+still an upright box.
+
+In the viewer the runs take their colour from the network that owns them, read
+out of the model's own `IfcDistributionSystem` groups rather than from their
+names. The **Site** view frames the whole plot and hides the ground, which is
+the only way to see the buried drains and the pit.
+
+The shower's waste is not modelled: two drains were described, one under each
+sink, and where the shower joins them was not said.
 
 One arithmetic conflict is left deliberately visible. The cooker sits 1400 mm
 from the back wall as first described, and a 600 cooker followed by a 600 fridge

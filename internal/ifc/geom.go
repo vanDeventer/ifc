@@ -1,5 +1,7 @@
 package ifc
 
+import "math"
+
 // The helpers here cover the small slice of IFC geometry the cottage needs:
 // cartesian points, directions, placements and rectangular or arbitrary
 // profiles swept along a direction.
@@ -56,6 +58,20 @@ func (f *File) PlacedAt(parent Ref, x, y, z float64) Ref {
 // wall" is the local X direction.
 func (f *File) PlacedAlong(parent Ref, x, y, z, dx, dy float64) Ref {
 	return f.Placement(parent, f.Axis3(f.Point3(x, y, z), f.Dir3(0, 0, 1), f.Dir3(dx, dy, 0)))
+}
+
+// PlacedAlongRun adds a local placement at a point whose local +Z axis points
+// along (dx, dy, dz), so that a profile extruded upwards in that frame follows
+// the run. Pipes and ducts use this, since a drain to a soakaway is neither
+// horizontal nor aligned to the building.
+func (f *File) PlacedAlongRun(parent Ref, x, y, z, dx, dy, dz float64) Ref {
+	// Any direction not parallel to the axis will do: IFC projects the
+	// reference direction onto the plane perpendicular to the axis.
+	rx, ry, rz := 1.0, 0.0, 0.0
+	if math.Abs(dx) > math.Abs(dy)+math.Abs(dz) {
+		rx, ry, rz = 0.0, 1.0, 0.0
+	}
+	return f.Placement(parent, f.Axis3(f.Point3(x, y, z), f.Dir3(dx, dy, dz), f.Dir3(rx, ry, rz)))
 }
 
 // RectProfile adds an IfcRectangleProfileDef centred on the origin of the

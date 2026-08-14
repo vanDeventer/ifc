@@ -90,9 +90,14 @@ type Space struct {
 // enough for both the IFC and the drawing.
 type Fitting struct {
 	Name           string
-	Kind           string // counter, sink, cooker, fridge, heater, plug, sensor, mast
+	Kind           string // counter, sink, cooker, fridge, heater, plug, sensor, mast, pipe, duct, pit
 	X1, Y1, X2, Y2 float64
 	Base, Top      float64
+
+	// A pipe or duct is a run rather than a box: a centreline from From to To
+	// and a diameter. Set Dia to use these instead of the box above.
+	From, To [3]float64
+	Dia      float64
 
 	// System names the mbaigo system that owns the device, and is written into
 	// the model as an IfcSystem the device is assigned to.
@@ -255,6 +260,21 @@ func fittings(kitchenE, bathW, bathS, x1, x2, y1, y2 float64) []Fitting {
 		runStart = 1400.0 // "the stove 1400 mm from the base"
 		windX    = 3970.0 // roughly the middle of the front elevation
 		windDist = 50000.0
+
+		// Pipework. The two water mains run side by side along the inside of
+		// the back wall, low down; sizes are nominal.
+		main   = 28.0
+		branch = 22.0
+		waste  = 75.0
+		flue   = 110.0
+		coldY  = 8555.0 // hard against the back wall
+		hotY   = 8480.0 // parallel to it, 75 mm in front
+		runZ   = 325.0
+
+		// The greywater pit, 10 m off the north-east corner of the building
+		// along the diagonal.
+		pitX = 8110 + 7071.0
+		pitY = 8770 + 7071.0
 	)
 	cookerN := y2 - runStart
 	cookerS := cookerN - appliance
@@ -268,8 +288,9 @@ func fittings(kitchenE, bathW, bathS, x1, x2, y1, y2 float64) []Fitting {
 			X1: 0, Y1: y2 - counter, X2: kitchenE, Y2: y2, Base: 0, Top: worktop},
 		{Name: "Kitchen worktop (west wall)", Kind: "counter",
 			X1: 0, Y1: cookerN, X2: counter, Y2: y2, Base: 0, Top: worktop},
-		{Name: "Kitchen sink", Kind: "sink", Networks: []string{"Cold water", "Hot water"},
-			X1: 775, Y1: y2 - 540, X2: 1575, Y2: y2 - 60, Base: 820, Top: worktop},
+		{Name: "Kitchen sink", Kind: "sink",
+			Networks: []string{"Cold water", "Hot water", "Greywater"},
+			X1:       775, Y1: y2 - 540, X2: 1575, Y2: y2 - 60, Base: 820, Top: worktop},
 		{Name: "Cooker", Kind: "cooker",
 			X1: 0, Y1: cookerS, X2: counter, Y2: cookerN, Base: 0, Top: worktop},
 		{Name: "Fridge", Kind: "fridge",
@@ -302,34 +323,75 @@ func fittings(kitchenE, bathW, bathS, x1, x2, y1, y2 float64) []Fitting {
 		{Name: "Plug, bathroom heater", Kind: "plug", System: "BeeKeeper",
 			X1: 6964, Y1: bathS, X2: 7034, Y2: bathS + 45, Base: 200, Top: 310},
 
-		// Plumbing. The cold feed enters under the kitchen sink and the 30 litre
-		// heater sits in the hallway between the bathroom and the bedroom, so
-		// everything hot is fed from there.
-		{Name: "Cold water service entry", Kind: "pipe", Networks: []string{"Cold water"},
-			X1: 1125, Y1: 8250, X2: 1225, Y2: 8350, Base: -150, Top: 600,
-			Note: "Enters the building under the kitchen sink"},
+		// Fixtures. The 30 litre heater is in the hallway between the bathroom
+		// and the bedroom, against the outer wall, so all the hot water starts
+		// from there.
 		{Name: "Water heater, 30 l", Kind: "waterheater",
 			Networks: []string{"Cold water", "Hot water"},
-			X1:       5340, Y1: 8200, X2: 5740, Y2: 8600, Base: 1200, Top: 1800,
+			X1:       5340, Y1: 8200, X2: 5740, Y2: y2, Base: 1200, Top: 1800,
 			Note: "30 litre electric storage heater; wall-hung, height ASSUMED"},
-
-		{Name: "Bathroom basin", Kind: "basin", Networks: []string{"Cold water", "Hot water"},
-			X1: 6339, Y1: 8250, X2: 6789, Y2: y2, Base: 780, Top: 900,
+		{Name: "Bathroom basin", Kind: "basin",
+			Networks: []string{"Cold water", "Hot water", "Greywater"},
+			X1:       6339, Y1: 8250, X2: 6789, Y2: y2, Base: 780, Top: 900,
 			Note: "Under the bathroom window"},
 		{Name: "Shower cabin", Kind: "shower", Networks: []string{"Cold water", "Hot water"},
 			X1: 7140, Y1: 7800, X2: x2, Y2: y2, Base: 0, Top: 2000,
-			Note: "In the corner of the two outside walls; 800 x 800 ASSUMED"},
+			Note: "In the corner of the two outside walls; 800 x 800 ASSUMED. Its waste " +
+				"is not modelled: only the two sink drains were described"},
 
 		// The Cinderella burns its waste, so it joins no water network at all,
-		// only the flue that carries the exhaust outside.
+		// only the flue, which runs up the outside of the wall right behind it.
 		{Name: "Toilet, Cinderella Classic", Kind: "toilet", Networks: []string{"Toilet exhaust"},
 			X1: 7420, Y1: 7150, X2: x2, Y2: 7800, Base: 0, Top: 600,
 			Note: "Electric incinerating toilet: no water supply and no drain. Size ASSUMED"},
-		{Name: "Toilet flue, riser", Kind: "duct", Networks: []string{"Toilet exhaust"},
-			X1: 7830, Y1: 7350, X2: 7940, Y2: 7460, Base: 600, Top: 1850},
 		{Name: "Toilet flue, through the east wall", Kind: "duct", Networks: []string{"Toilet exhaust"},
-			X1: 7830, Y1: 7350, X2: 8150, Y2: 7460, Base: 1740, Top: 1850,
-			Note: "Discharges outside; route through the wall rather than the roof ASSUMED"},
+			From: [3]float64{7900, 7475, 520}, To: [3]float64{8250, 7475, 520}, Dia: flue},
+		{Name: "Toilet flue, riser outside", Kind: "duct", Networks: []string{"Toilet exhaust"},
+			From: [3]float64{8250, 7475, 520}, To: [3]float64{8250, 7475, 2000}, Dia: flue,
+			Note: "Stops under the eave: where it terminates above the roof is not known"},
+
+		// Cold: in under the kitchen sink, then east along the outer wall and
+		// through the bedroom to the heater, the basin and the shower.
+		{Name: "Cold water service entry", Kind: "pipe", Networks: []string{"Cold water"},
+			From: [3]float64{1175, 8300, -650}, To: [3]float64{1175, 8300, 800}, Dia: main,
+			Note: "Enters under the kitchen sink and connects straight to it"},
+		{Name: "Cold water main", Kind: "pipe", Networks: []string{"Cold water"},
+			From: [3]float64{1175, coldY, runZ}, To: [3]float64{7100, coldY, runZ}, Dia: main,
+			Note: "Along the outer wall, through the bedroom"},
+		{Name: "Cold branch, water heater", Kind: "pipe", Networks: []string{"Cold water"},
+			From: [3]float64{5540, coldY, runZ}, To: [3]float64{5540, coldY, 1300}, Dia: main},
+		{Name: "Cold branch, bathroom basin", Kind: "pipe", Networks: []string{"Cold water"},
+			From: [3]float64{6564, coldY, runZ}, To: [3]float64{6564, coldY, 760}, Dia: branch},
+		{Name: "Cold branch, shower", Kind: "pipe", Networks: []string{"Cold water"},
+			From: [3]float64{7100, coldY, runZ}, To: [3]float64{7100, coldY, 1150}, Dia: branch},
+
+		// Hot: out of the heater and back along the same wall, parallel to the
+		// cold, reaching both sinks and the shower.
+		{Name: "Hot water drop from heater", Kind: "pipe", Networks: []string{"Hot water"},
+			From: [3]float64{5540, hotY, 1300}, To: [3]float64{5540, hotY, runZ}, Dia: main},
+		{Name: "Hot water main, west to the kitchen", Kind: "pipe", Networks: []string{"Hot water"},
+			From: [3]float64{5540, hotY, runZ}, To: [3]float64{1175, hotY, runZ}, Dia: main},
+		{Name: "Hot water main, east to the bathroom", Kind: "pipe", Networks: []string{"Hot water"},
+			From: [3]float64{5540, hotY, runZ}, To: [3]float64{7100, hotY, runZ}, Dia: main},
+		{Name: "Hot branch, kitchen sink", Kind: "pipe", Networks: []string{"Hot water"},
+			From: [3]float64{1175, hotY, runZ}, To: [3]float64{1175, hotY, 800}, Dia: branch},
+		{Name: "Hot branch, bathroom basin", Kind: "pipe", Networks: []string{"Hot water"},
+			From: [3]float64{6564, hotY, runZ}, To: [3]float64{6564, hotY, 760}, Dia: branch},
+		{Name: "Hot branch, shower", Kind: "pipe", Networks: []string{"Hot water"},
+			From: [3]float64{7100, hotY, runZ}, To: [3]float64{7100, hotY, 1150}, Dia: branch},
+
+		// Waste: one drain under each sink, both buried out to the same pit.
+		{Name: "Kitchen sink drain", Kind: "pipe", Networks: []string{"Greywater"},
+			From: [3]float64{1350, 8300, 800}, To: [3]float64{1350, 8300, -650}, Dia: waste},
+		{Name: "Kitchen drain to the pit", Kind: "pipe", Networks: []string{"Greywater"},
+			From: [3]float64{1350, 8300, -650}, To: [3]float64{pitX, pitY, -1100}, Dia: waste},
+		{Name: "Bathroom basin drain", Kind: "pipe", Networks: []string{"Greywater"},
+			From: [3]float64{6564, 8350, 760}, To: [3]float64{6564, 8350, -650}, Dia: waste},
+		{Name: "Bathroom drain to the pit", Kind: "pipe", Networks: []string{"Greywater"},
+			From: [3]float64{6564, 8350, -650}, To: [3]float64{pitX, pitY, -1100}, Dia: waste},
+		{Name: "Greywater pit", Kind: "pit", Networks: []string{"Greywater"},
+			X1: pitX - 600, Y1: pitY - 600, X2: pitX + 600, Y2: pitY + 600, Base: -1700, Top: -400,
+			Note: "10 m off the north-east corner, taken along the diagonal. Size ASSUMED"},
 
 		// Weather: a NetAtmo station reporting to Meteorologue.
 		{Name: "NetAtmo base module", Kind: "sensor", System: "Meteorologue",
