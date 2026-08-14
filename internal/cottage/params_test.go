@@ -109,3 +109,75 @@ func TestBuild(t *testing.T) {
 		t.Errorf("only %d GlobalIds found, expected one per product and relationship", len(seen))
 	}
 }
+
+// The relationships that make the model answerable as a graph: which wall
+// bounds which room, and which room holds which fixture.
+func TestSpatialRelationships(t *testing.T) {
+	p := Default()
+	byName := map[string]Wall{}
+	for _, w := range p.Walls {
+		byName[w.Name] = w
+	}
+	bathroom := map[string]Space{}
+	for _, s := range p.Spaces {
+		bathroom[s.Name] = s
+	}
+
+	// The bathroom is bounded by two outside walls and two partitions.
+	want := []string{"Back", "EastBase", "BathSouth", "BathWest"}
+	for _, name := range want {
+		if len(sharedEdges(bathroom["Bathroom"].Polygon, byName[name])) == 0 {
+			t.Errorf("wall %q should bound the bathroom", name)
+		}
+	}
+	// And not by walls on the far side of the building.
+	for _, name := range []string{"West", "RiseSouth", "BedroomWest"} {
+		if len(sharedEdges(bathroom["Bathroom"].Polygon, byName[name])) > 0 {
+			t.Errorf("wall %q should not bound the bathroom", name)
+		}
+	}
+
+	// Fixtures land in the room they stand in.
+	rooms := map[string]string{
+		"Shower cabin":       "Bathroom",
+		"Bathroom basin":     "Bathroom",
+		"Heater, bathroom":   "Bathroom",
+		"Kitchen sink":       "Living",
+		"Cooker":             "Living",
+		"Water heater, 30 l": "Living",
+	}
+	for _, ft := range p.Fittings {
+		want, checked := rooms[ft.Name]
+		if !checked {
+			continue
+		}
+		got := ""
+		for _, s := range p.Spaces {
+			if inPolygon(s.Polygon, (ft.X1+ft.X2)/2, (ft.Y1+ft.Y2)/2) {
+				got = s.Name
+				break
+			}
+		}
+		if got != want {
+			t.Errorf("%s sits in %q, expected %q", ft.Name, got, want)
+		}
+	}
+}
+
+// A classification code that names a product the model does not build is
+// silently dropped, so check every one lands.
+func TestClassificationCodesLand(t *testing.T) {
+	p := Default()
+	f := Build(p, time.Date(2026, 8, 14, 0, 0, 0, 0, time.UTC))
+	var buf bytes.Buffer
+	if err := f.Write(&buf); err != nil {
+		t.Fatal(err)
+	}
+	out := buf.String()
+	for _, c := range p.Classification.Codes {
+		if !strings.Contains(out, "'"+c.TypeName+"'") {
+			t.Errorf("classification code %q names %q, which is not a product in the model",
+				c.ID, c.TypeName)
+		}
+	}
+}

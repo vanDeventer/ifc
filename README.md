@@ -196,6 +196,46 @@ from the back wall as first described, and a 600 cooker followed by a 600 fridge
 then ends 420 mm past the bedroom wall rather than level with it. Holding the
 fridge to that line instead would put the cooker 980 mm from the back wall.
 
+## Relationships, for the knowledge graph
+
+Geometry alone cannot be asked questions. These four passes add the edges that
+can, and none of them touch the geometry code:
+
+**Containment.** A fixture or device is contained in the room it stands in, not
+in the storey: the shower is in the Bathroom, the cooker in the Living space.
+IFC allows one container per element, so this is a partition — walls, slabs,
+roofs, windows, doors and the distribution runs stay with the storey, because a
+pipe passes through rooms rather than standing in one.
+
+**Space boundaries.** `IfcRelSpaceBoundary` records which element bounds which
+room, and whether that boundary faces outside. Derived from the geometry: a wall
+bounds a room when one of its faces lies along an edge of the room's polygon,
+and a window or door bounds it when it falls in that stretch of wall. A room can
+meet the same wall in two separate stretches — the open living space touches the
+back wall at the kitchen end and again at the hallway nook — and both count.
+
+This is what makes a door an edge between two rooms:
+
+```
+Bedroom door    Bedroom  <-> Living
+Bathroom door   Bathroom <-> Living
+Entrance door   Living                 (the other side is outside)
+```
+
+**Types.** 68 occurrences over 33 type objects. "The window in the bathroom" is
+an occurrence of "Window 600 x 600", of which there is one definition however
+many are installed — the individual-and-definition split, via
+`IfcRelDefinesByType`.
+
+**Classification.** Attached to the type objects, so occurrences inherit it
+through their type. **The identifications are placeholders.** The IFC wiring is
+real — `IfcClassification`, `IfcClassificationReference`,
+`IfcRelAssociatesClassification` — but the codes are invented, and the scheme is
+named so that nobody downstream mistakes them for a published table. Swapping in
+CoClass means replacing the source and the ID column in `params.go`; nothing
+else changes. A test checks that every code names a product the model actually
+builds, since one that does not is silently dropped.
+
 ## What came from where
 
 Given as measurements: the L footprint, the four room widths along the back

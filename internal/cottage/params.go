@@ -45,11 +45,83 @@ type Params struct {
 	// clockwise from true north. NNE is 22.5.
 	Facing float64
 
-	Walls        []Wall
-	Openings     []Opening
-	Spaces       []Space
-	Fittings     []Fitting
-	Penetrations []Penetration
+	Walls          []Wall
+	Openings       []Opening
+	Spaces         []Space
+	Fittings       []Fitting
+	Penetrations   []Penetration
+	Classification Classification
+}
+
+// Classification is the scheme the products are classified against. It is
+// attached to the type objects, so occurrences inherit it through their type.
+//
+// The identifications below are PLACEHOLDERS. The IFC wiring is real -
+// IfcClassification, IfcClassificationReference and IfcRelAssociatesClassification
+// - but the codes are made up, and are named as such so that nobody downstream
+// mistakes them for a published table. Swapping in CoClass means replacing the
+// Source and the ID column; nothing else has to change.
+type Classification struct {
+	Source      string
+	Edition     string
+	Name        string
+	Description string
+	Codes       []Code
+}
+
+// Code classifies one product, named by its type object.
+type Code struct {
+	TypeName string
+	ID       string
+	Title    string
+}
+
+func placeholderClassification() Classification {
+	return Classification{
+		Source:      "Placeholder scheme (replace with CoClass)",
+		Edition:     "0",
+		Name:        "cottage-placeholder",
+		Description: "Made-up identifications. The structure is real IFC; the codes are not a published table.",
+		Codes: []Code{
+			{"Exterior wall 170", "EW", "Exterior wall"},
+			{"Partition 95", "IW", "Interior partition"},
+			{"Floor slab 150", "FL", "Ground floor"},
+			{"Hipped roof", "RF", "Roof"},
+			{"Gable roof", "RF", "Roof"},
+
+			{"Window 600 x 600", "WI", "Window"},
+			{"Window 1000 x 1000", "WI", "Window"},
+			{"Window 1200 x 1200", "WI", "Window"},
+			{"Window 1800 x 1000", "WI", "Window"},
+			{"Window 1800 x 1200", "WI", "Window"},
+			{"Door 700 x 2040", "DR", "Interior door"},
+			{"Door 800 x 2040", "DR", "Interior door"},
+			{"Door 900 x 2040", "DE", "Entrance door"},
+
+			{"Panel heater 1000 W", "HT", "Space heating terminal"},
+			{"Panel heater 2000 W", "HT", "Space heating terminal"},
+			{"Aqara smart plug", "EO", "Switched power outlet"},
+			{"NetAtmo module, temperaturesensor", "SN", "Sensor"},
+			{"NetAtmo module, humiditysensor", "SN", "Sensor"},
+			{"NetAtmo module, windsensor", "SN", "Sensor"},
+
+			{"Kitchen sink", "SA", "Sanitary appliance"},
+			{"Wash hand basin", "SA", "Sanitary appliance"},
+			{"Shower cabin", "SA", "Sanitary appliance"},
+			{"Incinerating toilet, Cinderella Classic", "SA", "Sanitary appliance"},
+			{"Water heater, 30 l", "HW", "Hot water generation"},
+			{"Pipe 22 mm", "PW", "Water supply pipe"},
+			{"Pipe 28 mm", "PW", "Water supply pipe"},
+			{"Pipe 75 mm", "WW", "Waste pipe"},
+			{"Duct 110 mm", "VT", "Ventilation duct"},
+			{"Greywater pit", "WC", "Waste water chamber"},
+
+			{"Electric cooker", "AP", "Domestic appliance"},
+			{"Refrigerator", "AP", "Domestic appliance"},
+			{"Kitchen unit", "FU", "Fixed furniture"},
+			{"Mast", "EX", "External structure"},
+		},
+	}
 }
 
 // Penetration is a hole cut through a named element by something passing
@@ -250,6 +322,8 @@ func Default() Params {
 		},
 
 		Fittings: fittings(bedW-hi, bathW+hi, bathS+hi, x1, x2, y1, y2),
+
+		Classification: placeholderClassification(),
 
 		Penetrations: []Penetration{
 			{Name: "Flue through the roof overhang", Host: "Roof over base",

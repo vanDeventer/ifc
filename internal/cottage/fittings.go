@@ -53,6 +53,44 @@ func ifcClass(f Fitting) (entity string, predefined string) {
 	panic(fmt.Sprintf("cottage: unknown fitting kind %q on %q", f.Kind, f.Name))
 }
 
+// fittingTypeName groups occurrences that are the same product. Two 2000 W
+// panel heaters share a type; a 1000 W one does not.
+func fittingTypeName(f Fitting, predefined string) string {
+	switch f.Kind {
+	case "heater":
+		return fmt.Sprintf("Panel heater %.0f W", f.Watts)
+	case "plug":
+		return "Aqara smart plug"
+	case "sensor":
+		return "NetAtmo module, " + strings.ToLower(f.Sensor)
+	case "pipe":
+		return fmt.Sprintf("Pipe %.0f mm", f.Dia)
+	case "duct":
+		return fmt.Sprintf("Duct %.0f mm", f.Dia)
+	case "waterheater":
+		return "Water heater, 30 l"
+	case "counter":
+		return "Kitchen unit"
+	case "mast":
+		return "Mast"
+	case "toilet":
+		return "Incinerating toilet, Cinderella Classic"
+	case "sink":
+		return "Kitchen sink"
+	case "basin":
+		return "Wash hand basin"
+	case "shower":
+		return "Shower cabin"
+	case "cooker":
+		return "Electric cooker"
+	case "fridge":
+		return "Refrigerator"
+	case "pit":
+		return "Greywater pit"
+	}
+	return strings.ToUpper(predefined[:1]) + strings.ToLower(predefined[1:])
+}
+
 // fittings writes the kitchen units, the heating and the weather station, then
 // gathers the devices into one IfcSystem per mbaigo system that owns them.
 func (b *builder) fittings(p Params) {
@@ -88,7 +126,18 @@ func (b *builder) fittings(p Params) {
 			args = append(args, ifc.Enum(predefined))
 		}
 		r := b.f.Add(entity, args...)
-		b.elements = append(b.elements, r)
+		cx, cy := (ft.X1+ft.X2)/2, (ft.Y1+ft.Y2)/2
+		if ft.Dia > 0 {
+			cx, cy = (ft.From[0]+ft.To[0])/2, (ft.From[1]+ft.To[1])/2
+		}
+		b.note(&elementRec{
+			ref: r, entity: entity, predefined: predefined,
+			typeName: fittingTypeName(ft, predefined),
+			cx:       cx, cy: cy,
+			// A run passes through rooms rather than standing in one, so it
+			// stays with the storey; fixtures and devices go in their room.
+			roomable: ft.Kind != "pipe" && ft.Kind != "duct" && ft.Kind != "mast" && ft.Kind != "pit",
+		})
 
 		if props := fittingProps(ft); len(props) > 0 {
 			b.pset(r, "Pset_Mbaigo_"+psetSuffix(ft), props)

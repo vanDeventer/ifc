@@ -16,14 +16,47 @@ type builder struct {
 	floor    ifc.Ref // placement of the storey, and of every element in it
 	building ifc.Ref
 
-	elements []ifc.Ref          // everything contained in the storey
-	named    map[string]ifc.Ref // elements a penetration can name as its host
+	named map[string]ifc.Ref // elements a penetration can name as its host
+
+	// Everything written, in order, so that the relationship passes can put
+	// elements in rooms, bound rooms with them, give them types and classify
+	// them without the geometry code having to know about any of that.
+	records []*elementRec
+	fills   []fillRec
+	spaces  map[string]ifc.Ref
+	polys   map[string][][2]float64
+}
+
+// elementRec is what the relationship passes need to know about an element
+// after it has been written.
+type elementRec struct {
+	ref        ifc.Ref
+	entity     string // IFCWALL, IFCWINDOW, ...
+	predefined string
+	typeName   string  // groups occurrences under one type object; "" for none
+	cx, cy     float64 // plan centroid
+	roomable   bool    // may be contained in a room rather than the storey
+	space      string  // filled in by the containment pass
+}
+
+// fillRec locates a window or a door along its wall, so that the boundary pass
+// can tell which rooms it opens between.
+type fillRec struct {
+	ref       ifc.Ref
+	wall      string
+	at, width float64
+}
+
+func (b *builder) note(r *elementRec) ifc.Ref {
+	b.records = append(b.records, r)
+	return r.ref
 }
 
 // Build turns the parameters into a complete IFC4 model.
 func Build(p Params, stamp time.Time) *ifc.File {
 	f := ifc.New(p.Name+".ifc", "van Deventer", "Luleå University of Technology", stamp)
-	b := &builder{f: f, named: map[string]ifc.Ref{}}
+	b := &builder{f: f, named: map[string]ifc.Ref{},
+		spaces: map[string]ifc.Ref{}, polys: map[string][][2]float64{}}
 
 	person := f.Add("IFCPERSON", ifc.Null{}, "van Deventer", "Jan", ifc.Null{}, ifc.Null{}, ifc.Null{}, ifc.Null{}, ifc.Null{})
 	org := f.Add("IFCORGANIZATION", ifc.Null{}, "Luleå University of Technology", ifc.Null{}, ifc.Null{}, ifc.Null{})
@@ -78,12 +111,14 @@ func Build(p Params, stamp time.Time) *ifc.File {
 	b.fittings(p)
 	b.penetrations(p)
 
-	f.Add("IFCRELCONTAINEDINSPATIALSTRUCTURE", ifc.GUID("contained"), b.owner,
-		ifc.Null{}, ifc.Null{}, b.elements, storey)
-
-	if spaces := b.spaces(p); len(spaces) > 0 {
-		f.Add("IFCRELAGGREGATES", ifc.GUID("agg-spaces"), b.owner, ifc.Null{}, ifc.Null{}, storey, spaces)
+	// The rooms have to exist before anything can be put in them or bounded
+	// by them.
+	if rooms := b.writeSpaces(p); len(rooms) > 0 {
+		f.Add("IFCRELAGGREGATES", ifc.GUID("agg-spaces"), b.owner, ifc.Null{}, ifc.Null{}, storey, rooms)
 	}
+	b.contain(p, storey)
+	b.boundaries(p)
+	b.classify(p, b.types())
 	return f
 }
 
@@ -107,7 +142,9 @@ func (b *builder) slab(p Params) {
 	shape := b.f.BodyShape(b.body, solid)
 	r := b.f.Add("IFCSLAB", ifc.GUID("slab-floor"), b.owner, "Floor slab", ifc.Null{}, ifc.Null{},
 		pl, shape, ifc.Null{}, ifc.Enum("FLOOR"))
-	b.elements = append(b.elements, r)
+	b.note(&elementRec{ref: r, entity: "IFCSLAB", predefined: "FLOOR",
+		typeName: fmt.Sprintf("Floor slab %.0f", p.Slab)})
+	b.named["Floor slab"] = r
 }
 
 func (b *builder) walls(p Params) {
@@ -143,7 +180,11 @@ func (b *builder) walls(p Params) {
 		}
 		r := b.f.Add("IFCWALL", ifc.GUID("wall-"+w.Name), b.owner, w.Name, ifc.Null{}, ifc.Null{},
 			pl, shape, ifc.Null{}, kind)
-		b.elements = append(b.elements, r)
+		typeName := fmt.Sprintf("Exterior wall %.0f", w.Thickness)
+		if w.Interior {
+			typeName = fmt.Sprintf("Partition %.0f", w.Thickness)
+		}
+		b.note(&elementRec{ref: r, entity: "IFCWALL", predefined: string(kind), typeName: typeName})
 		b.named[w.Name] = r
 		byName[w.Name] = &placed{Wall: w, ref: r, pl: pl, len: length}
 	}
@@ -199,7 +240,14 @@ func (b *builder) walls(p Params) {
 				ifc.Enum("SINGLE_PANEL"), ifc.Null{})
 		}
 		b.f.Add("IFCRELFILLSELEMENT", ifc.GUID("fills-"+seed), b.owner, ifc.Null{}, ifc.Null{}, void, fill)
-		b.elements = append(b.elements, fill)
+		entity, predefined := "IFCWINDOW", "WINDOW"
+		typeName := fmt.Sprintf("Window %.0f x %.0f", o.Width, o.Height)
+		if o.Door {
+			entity, predefined = "IFCDOOR", "DOOR"
+			typeName = fmt.Sprintf("Door %.0f x %.0f", o.Width, o.Height)
+		}
+		b.note(&elementRec{ref: fill, entity: entity, predefined: predefined, typeName: typeName})
+		b.fills = append(b.fills, fillRec{ref: fill, wall: o.Wall, at: o.At, width: o.Width})
 	}
 }
 
@@ -246,7 +294,7 @@ func (b *builder) roof(p Params) {
 		})
 		r := b.f.Add("IFCROOF", ifc.GUID("roof-base"), b.owner, "Roof over base", ifc.Null{}, ifc.Null{},
 			b.f.PlacedAt(b.floor, 0, 0, 0), b.f.BodyShapeOf(b.body, "Brep", brep), ifc.Null{}, ifc.Enum("HIP_ROOF"))
-		b.elements = append(b.elements, r)
+		b.note(&elementRec{ref: r, entity: "IFCROOF", predefined: "HIP_ROOF", typeName: "Hipped roof"})
 		b.named["Roof over base"] = r
 	}
 
@@ -274,7 +322,7 @@ func (b *builder) roof(p Params) {
 		solid := b.f.Extrude(prof, pos, 0, 0, 1, yb-ya)
 		r := b.f.Add("IFCROOF", ifc.GUID("roof-rise"), b.owner, "Roof over rise", ifc.Null{}, ifc.Null{},
 			b.f.PlacedAt(b.floor, 0, 0, 0), b.f.BodyShape(b.body, solid), ifc.Null{}, ifc.Enum("GABLE_ROOF"))
-		b.elements = append(b.elements, r)
+		b.note(&elementRec{ref: r, entity: "IFCROOF", predefined: "GABLE_ROOF", typeName: "Gable roof"})
 		b.named["Roof over rise"] = r
 
 		// The triangle of boarding between the wall top and the roof.
@@ -285,18 +333,21 @@ func (b *builder) roof(p Params) {
 		gsolid := b.f.Extrude(gable, gpos, 0, 0, 1, t)
 		g := b.f.Add("IFCWALL", ifc.GUID("gable-rise"), b.owner, "Rise gable", ifc.Null{}, ifc.Null{},
 			b.f.PlacedAt(b.floor, 0, 0, 0), b.f.BodyShape(b.body, gsolid), ifc.Null{}, ifc.Enum("SOLIDWALL"))
-		b.elements = append(b.elements, g)
+		b.note(&elementRec{ref: g, entity: "IFCWALL", predefined: "SOLIDWALL",
+			typeName: fmt.Sprintf("Exterior wall %.0f", p.ExtWall)})
 	}
 }
 
-func (b *builder) spaces(p Params) []ifc.Ref {
+func (b *builder) writeSpaces(p Params) []ifc.Ref {
 	var out []ifc.Ref
 	for _, s := range p.Spaces {
+		b.polys[s.Name] = s.Polygon
 		prof := b.f.PolyProfile(s.Name, s.Polygon)
 		solid := b.f.ExtrudeUp(prof, 0, p.Ceiling)
 		r := b.f.Add("IFCSPACE", ifc.GUID("space-"+s.Name), b.owner, s.Name, ifc.Null{}, ifc.Null{},
 			b.f.PlacedAt(b.floor, 0, 0, 0), b.f.BodyShape(b.body, solid), s.Long,
 			ifc.Enum("ELEMENT"), ifc.Enum("SPACE"), 0.0)
+		b.spaces[s.Name] = r
 		out = append(out, r)
 	}
 	return out
