@@ -1,8 +1,10 @@
 # ifc — the cottage as an IFC4 model
 
-Generates `cottage.ifc` (IFC4, STEP physical file) and `cottage.html`, a
-self-contained page that renders it in 3D in a browser. No cgo, no
-IfcOpenShell, no JavaScript libraries, nothing fetched from the network.
+Generates three views of one cottage: `cottage.ifc` (IFC4, STEP physical file),
+`cottage.html`, a self-contained page that renders it in 3D in a browser, and
+`cottage.ttl`, the same model as RDF using the Linked Building Data ontologies.
+No cgo, no IfcOpenShell, no JavaScript libraries, nothing fetched from the
+network.
 
 ```
 go run ./cmd/ifcgen -out .
@@ -51,7 +53,7 @@ Four steps:
 
 ## Is Go needed afterwards?
 
-**No.** `cottage.html` is a single 77 KB file carrying three things at once: the
+**No.** `cottage.html` is a single 120 KB file carrying three things at once: the
 model, a reader for it and a renderer. Open it by double-clicking, with no
 server, no network and no toolchain, on a machine that has never heard of Go.
 Mail it to someone and it works for them too.
@@ -96,7 +98,10 @@ would make it data all the way down.
 ## Files
 
 ```
-cmd/ifcgen          writes the model and the viewer
+cmd/ifcgen          writes the model, the viewer and the RDF
+cmd/ifc2ttl         converts any IFC4 file to Turtle on its own
+internal/step       a STEP (ISO 10303-21) reader
+internal/lbd        the IFC to Linked Building Data mapping
 internal/ifc        IFC4 writer: entity numbering, STEP values, GUIDs, geometry helpers
 internal/cottage    the cottage as data (params.go) and the model builder (build.go)
 internal/viewer     the WebGL viewer, embedded with go:embed
@@ -196,7 +201,7 @@ from the back wall as first described, and a 600 cooker followed by a 600 fridge
 then ends 420 mm past the bedroom wall rather than level with it. Holding the
 fridge to that line instead would put the cooker 980 mm from the back wall.
 
-## Relationships, for the knowledge graph
+## Relationships in the IFC
 
 Geometry alone cannot be asked questions. These four passes add the edges that
 can, and none of them touch the geometry code:
@@ -235,6 +240,63 @@ named so that nobody downstream mistakes them for a published table. Swapping in
 CoClass means replacing the source and the ID column in `params.go`; nothing
 else changes. A test checks that every code names a product the model actually
 builds, since one that does not is silently dropped.
+
+## RDF, with the LBD ontologies
+
+`cottage.ttl` is the same model as Linked Building Data, written by
+`cmd/ifc2ttl`, which reads any IFC4 file rather than only this one:
+
+```
+go run ./cmd/ifc2ttl -o cottage.ttl cottage.ifc
+```
+
+The IFC file stays authoritative for geometry, and says so: the building carries
+`omg:hasGeometry` pointing at a node that names the IFC file through
+`fog:asIfc_v2x4`. What crosses over is the part a graph can be asked questions
+of. 1248 triples over these ontologies:
+
+| | |
+|---|---|
+| **BOT** | spatial hierarchy, containment, adjacency, hosting |
+| **BEO** | `beo:Wall`, `beo:Wall-PARTITIONING`, `beo:Window`, `beo:Slab-FLOOR`, `beo:Roof-HIP_ROOF` |
+| **MEP** | `mep:SpaceHeater-CONVECTOR`, `mep:Sensor-WINDSENSOR`, `mep:SanitaryTerminal-TOILETPAN` |
+| **FSO** | the four flow systems and the role of each component |
+| **BPO** | `bpo:realisesObject`, the installed element to its product |
+| **SKOS** | the classification scheme |
+| **OMG / FOG** | where the geometry stayed behind |
+
+Every class the converter can emit was checked against the published ontology
+rather than recalled, and a test keeps it that way. An IFC entity with no class
+in BEO or MEP stays a plain `bot:Element` and the file says so in a comment, in
+preference to inventing a class that may not exist. Two terms have no LBD
+equivalent and are declared in the file itself: `cot:SoftwareSystem` for the
+mbaigo systems, which drive devices rather than carry fluid, and
+`cot:boundaryFacing` for the inside/outside flag on a space boundary.
+
+Space boundaries come across twice on purpose: as `bot:adjacentElement` for
+querying, and as a reified `bot:Interface` that can carry the flag.
+
+Asking it something, in SPARQL:
+
+```sparql
+# Which rooms does each door join?
+SELECT ?door (GROUP_CONCAT(?room; separator=" <-> ") AS ?joins) WHERE {
+  ?s a bot:Space ; rdfs:label ?room ; bot:adjacentElement ?d .
+  ?d a beo:Door ; rdfs:label ?door .
+} GROUP BY ?door
+
+#   Bathroom door   Bathroom <-> Living
+#   Bedroom door    Bedroom <-> Living
+#   Entrance door   Living
+```
+
+```sparql
+# What does the cold water system feed?
+SELECT ?component WHERE {
+  ?sys a fso:DistributionSystem ; rdfs:label "Cold water" ; fso:hasComponent ?c .
+  ?c rdfs:label ?component .
+}
+```
 
 ## What came from where
 

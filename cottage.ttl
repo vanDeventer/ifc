@@ -1,0 +1,913 @@
+@prefix inst:    <https://vandeventer.github.io/ifc/cottage/> .
+@prefix cot:     <https://vandeventer.github.io/ifc/cottage/vocab#> .
+@prefix bot:     <https://w3id.org/bot#> .
+@prefix beo:     <https://pi.pauwel.be/voc/buildingelement#> .
+@prefix mep:     <https://pi.pauwel.be/voc/distributionelement#> .
+@prefix fso:     <https://w3id.org/fso#> .
+@prefix bpo:     <https://w3id.org/bpo#> .
+@prefix omg:     <https://w3id.org/omg#> .
+@prefix fog:     <https://w3id.org/fog#> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+
+# ---------------------------------------------------------------- this dataset
+<https://vandeventer.github.io/ifc/cottage> a owl:Ontology ;
+    dcterms:title "Cottage" ;
+    dcterms:source <cottage.ifc> ;
+    rdfs:comment "Converted from IFC4. Geometry is not carried over; the IFC file named as dcterms:source remains authoritative for it." .
+
+inst:0R8Ea26peMi5aeVAtSU6Bs omg:hasGeometry inst:geometry .
+inst:geometry a omg:Geometry ; fog:asIfc_v2x4 <cottage.ifc> .
+
+# ---------------------------------------------------------------- terms with no LBD equivalent
+cot:SoftwareSystem a owl:Class ;
+    rdfs:label "Software system" ;
+    rdfs:comment "A running system that drives or reads devices in the building, as distinct from a flow system. Here: the mbaigo systems." .
+cot:manages a owl:ObjectProperty ;
+    rdfs:label "manages" ;
+    rdfs:comment "Relates a software system to a device it drives or reads." .
+cot:boundaryFacing a owl:DatatypeProperty ;
+    rdfs:label "boundary facing" ;
+    rdfs:comment "INTERNAL or EXTERNAL, from the IFC space boundary." .
+
+# ---------------------------------------------------------------- spatial structure
+inst:2Otlrkvmtx7Uf1REpVEHzO a bot:Site ;
+    rdfs:label "Site" ;
+    dcterms:identifier "2Otlrkvmtx7Uf1REpVEHzO" .
+inst:0R8Ea26peMi5aeVAtSU6Bs a bot:Building ;
+    rdfs:label "Cottage" ;
+    dcterms:identifier "0R8Ea26peMi5aeVAtSU6Bs" .
+inst:2xIpuRJ8qeHpBXBvT0C42n a bot:Storey ;
+    rdfs:label "Ground floor" ;
+    dcterms:identifier "2xIpuRJ8qeHpBXBvT0C42n" .
+inst:1WolMsTTOxgH8jOQxaOSpY a bot:Space ;
+    rdfs:comment "Bedroom" ;
+    rdfs:label "Bedroom" ;
+    dcterms:identifier "1WolMsTTOxgH8jOQxaOSpY" .
+inst:3Ku0xXoV%24PR9jlVvMw9yFe a bot:Space ;
+    rdfs:comment "Bathroom" ;
+    rdfs:label "Bathroom" ;
+    dcterms:identifier "3Ku0xXoV$PR9jlVvMw9yFe" .
+inst:3h6%243R33ye%24kqziK0VEzg7 a bot:Space ;
+    rdfs:comment "Kitchen / dining / living" ;
+    rdfs:label "Living" ;
+    dcterms:identifier "3h6$3R33ye$kqziK0VEzg7" .
+
+inst:2Otlrkvmtx7Uf1REpVEHzO bot:hasBuilding inst:0R8Ea26peMi5aeVAtSU6Bs .
+inst:0R8Ea26peMi5aeVAtSU6Bs bot:hasStorey inst:2xIpuRJ8qeHpBXBvT0C42n .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:hasSpace inst:1WolMsTTOxgH8jOQxaOSpY .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:hasSpace inst:3Ku0xXoV%24PR9jlVvMw9yFe .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:hasSpace inst:3h6%243R33ye%24kqziK0VEzg7 .
+
+# ---------------------------------------------------------------- elements
+inst:2PRhysAsnVP_NSJoazK6GC a bot:Element, beo:Slab, beo:Slab-FLOOR ;
+    rdfs:label "Floor slab" ;
+    dcterms:identifier "2PRhysAsnVP_NSJoazK6GC" .
+inst:0UfH1vrLfsw0epPFcMJArB a bot:Element, beo:Wall, beo:Wall-SOLIDWALL ;
+    rdfs:label "Back" ;
+    dcterms:identifier "0UfH1vrLfsw0epPFcMJArB" .
+inst:0cBMjNcFAYWuf1Yu2rQsgH a bot:Element, beo:Wall, beo:Wall-SOLIDWALL ;
+    rdfs:label "Front" ;
+    dcterms:identifier "0cBMjNcFAYWuf1Yu2rQsgH" .
+inst:086sdHFwwt7nf0nr%24SCRPf a bot:Element, beo:Wall, beo:Wall-SOLIDWALL ;
+    rdfs:label "West" ;
+    dcterms:identifier "086sdHFwwt7nf0nr$SCRPf" .
+inst:31X4tdKIuGys115sYb3sIy a bot:Element, beo:Wall, beo:Wall-SOLIDWALL ;
+    rdfs:label "EastBase" ;
+    dcterms:identifier "31X4tdKIuGys115sYb3sIy" .
+inst:0Bls%24r9uNT66%24h8vuRsQfB a bot:Element, beo:Wall, beo:Wall-SOLIDWALL ;
+    rdfs:label "RiseSouth" ;
+    dcterms:identifier "0Bls$r9uNT66$h8vuRsQfB" .
+inst:0ve3NA6yXEhD_QsRVBcP3R a bot:Element, beo:Wall, beo:Wall-SOLIDWALL ;
+    rdfs:label "RiseWest" ;
+    dcterms:identifier "0ve3NA6yXEhD_QsRVBcP3R" .
+inst:2Bf3FPwjkUtFMJiyL%24JYNG a bot:Element, beo:Wall, beo:Wall-SOLIDWALL ;
+    rdfs:label "EastRise" ;
+    dcterms:identifier "2Bf3FPwjkUtFMJiyL$JYNG" .
+inst:3f0B%2462V67PfzIvpWp3Whz a bot:Element, beo:Wall, beo:Wall-PARTITIONING ;
+    rdfs:label "BedroomSouth" ;
+    dcterms:identifier "3f0B$62V67PfzIvpWp3Whz" .
+inst:3AZR6dRbw_Ql5bzO2az8Ym a bot:Element, beo:Wall, beo:Wall-PARTITIONING ;
+    rdfs:label "BedroomWest" ;
+    dcterms:identifier "3AZR6dRbw_Ql5bzO2az8Ym" .
+inst:2OKuZNApK4g5E2gvq2s91L a bot:Element, beo:Wall, beo:Wall-PARTITIONING ;
+    rdfs:label "BedroomEast" ;
+    dcterms:identifier "2OKuZNApK4g5E2gvq2s91L" .
+inst:2VawPYkraIx6OAXbp3rQm4 a bot:Element, beo:Wall, beo:Wall-PARTITIONING ;
+    rdfs:label "BathSouth" ;
+    dcterms:identifier "2VawPYkraIx6OAXbp3rQm4" .
+inst:0oqR3rZIAMQOfuh1Jsl6gH a bot:Element, beo:Wall, beo:Wall-PARTITIONING ;
+    rdfs:label "BathWest" ;
+    dcterms:identifier "0oqR3rZIAMQOfuh1Jsl6gH" .
+inst:25fCQSB%24x%24UFG2snPgDt0P a bot:Element, beo:Window, beo:Window-WINDOW ;
+    rdfs:label "Kitchen window (back)" ;
+    dcterms:identifier "25fCQSB$x$UFG2snPgDt0P" .
+inst:16jEQpq8zY2D4KIpyupimP a bot:Element, beo:Window, beo:Window-WINDOW ;
+    rdfs:label "Bedroom window" ;
+    dcterms:identifier "16jEQpq8zY2D4KIpyupimP" .
+inst:29uO8rpjgWILPQSkF5O6yb a bot:Element, beo:Window, beo:Window-WINDOW ;
+    rdfs:label "Bathroom window" ;
+    dcterms:identifier "29uO8rpjgWILPQSkF5O6yb" .
+inst:2xxuou0fenRZFg63mYIksn a bot:Element, beo:Window, beo:Window-WINDOW ;
+    rdfs:label "Kitchen window (front)" ;
+    dcterms:identifier "2xxuou0fenRZFg63mYIksn" .
+inst:39J88Z8Zi35d65D6_NVb8w a bot:Element, beo:Door, beo:Door-DOOR ;
+    rdfs:label "Entrance door" ;
+    dcterms:identifier "39J88Z8Zi35d65D6_NVb8w" .
+inst:3YWkF0dKlffxWmHPy%24nP%24a a bot:Element, beo:Window, beo:Window-WINDOW ;
+    rdfs:label "Dining room window" ;
+    dcterms:identifier "3YWkF0dKlffxWmHPy$nP$a" .
+inst:07ZmmOJZPnKTUimOw3_9bd a bot:Element, beo:Window, beo:Window-WINDOW ;
+    rdfs:label "Living window (west)" ;
+    dcterms:identifier "07ZmmOJZPnKTUimOw3_9bd" .
+inst:1w9pufr1TDe0VYOM7FKvY2 a bot:Element, beo:Window, beo:Window-WINDOW ;
+    rdfs:label "Living window (east)" ;
+    dcterms:identifier "1w9pufr1TDe0VYOM7FKvY2" .
+inst:1Aqw6GVG5u4RDIBFUfdtOY a bot:Element, beo:Door, beo:Door-DOOR ;
+    rdfs:label "Bedroom door" ;
+    dcterms:identifier "1Aqw6GVG5u4RDIBFUfdtOY" .
+inst:3hJfcua12i9FGbhVXnRId8 a bot:Element, beo:Door, beo:Door-DOOR ;
+    rdfs:label "Bathroom door" ;
+    dcterms:identifier "3hJfcua12i9FGbhVXnRId8" .
+inst:1kniNBiD9YSedPh2pFmn23 a bot:Element, beo:Roof, beo:Roof-HIP_ROOF ;
+    rdfs:label "Roof over base" ;
+    dcterms:identifier "1kniNBiD9YSedPh2pFmn23" .
+inst:2w8AUa1Ac61mbmqayNgmeh a bot:Element, beo:Roof, beo:Roof-GABLE_ROOF ;
+    rdfs:label "Roof over rise" ;
+    dcterms:identifier "2w8AUa1Ac61mbmqayNgmeh" .
+inst:2img9d4rixPieKQAp%24z4_i a bot:Element, beo:Wall, beo:Wall-SOLIDWALL ;
+    rdfs:label "Rise gable" ;
+    dcterms:identifier "2img9d4rixPieKQAp$z4_i" .
+inst:1B48B9CY37EjuwTDPWCsax a bot:Element ;
+    rdfs:label "Kitchen worktop (back wall)" ;
+    dcterms:identifier "1B48B9CY37EjuwTDPWCsax" .
+inst:3NdV9knk8KuCkIOV1HQI3%24 a bot:Element ;
+    rdfs:label "Kitchen worktop (west wall)" ;
+    dcterms:identifier "3NdV9knk8KuCkIOV1HQI3$" .
+inst:2pmrujdo%24lH2cY7LdVhmWz a bot:Element, mep:SanitaryTerminal, mep:SanitaryTerminal-SINK ;
+    rdfs:label "Kitchen sink" ;
+    dcterms:identifier "2pmrujdo$lH2cY7LdVhmWz" .
+inst:3VhTsxpaNaG5FYxzGA7pXB a bot:Element, mep:ElectricAppliance, mep:ElectricAppliance-ELECTRICCOOKER ;
+    rdfs:label "Cooker" ;
+    dcterms:identifier "3VhTsxpaNaG5FYxzGA7pXB" .
+inst:2mPoLgI_oIPvQ44dKqLmyL a bot:Element, mep:ElectricAppliance, mep:ElectricAppliance-REFRIGERATOR ;
+    rdfs:label "Fridge" ;
+    dcterms:identifier "2mPoLgI_oIPvQ44dKqLmyL" .
+inst:3Y5XgJhSzGL_XiTyBq12zQ a bot:Element, mep:SpaceHeater, mep:SpaceHeater-CONVECTOR ;
+    rdfs:label "Heater, kitchen" ;
+    dcterms:identifier "3Y5XgJhSzGL_XiTyBq12zQ" .
+inst:0kLyU0NRsxxGyxPRyFr6c4 a bot:Element, mep:Outlet, mep:Outlet-POWEROUTLET ;
+    rdfs:label "Plug, kitchen heater" ;
+    dcterms:identifier "0kLyU0NRsxxGyxPRyFr6c4" .
+inst:0Z1oQk0Tfe6BlcQETimvQP a bot:Element, mep:SpaceHeater, mep:SpaceHeater-CONVECTOR ;
+    rdfs:label "Heater, living west" ;
+    dcterms:identifier "0Z1oQk0Tfe6BlcQETimvQP" .
+inst:3sJlA8CUlQzk3nuE8p1BJR a bot:Element, mep:Outlet, mep:Outlet-POWEROUTLET ;
+    rdfs:label "Plug, living west heater" ;
+    dcterms:identifier "3sJlA8CUlQzk3nuE8p1BJR" .
+inst:0mY0C__ReYxMT4prbNwp7J a bot:Element, mep:SpaceHeater, mep:SpaceHeater-CONVECTOR ;
+    rdfs:label "Heater, living east" ;
+    dcterms:identifier "0mY0C__ReYxMT4prbNwp7J" .
+inst:0x%24j_PQ7DvIgJOqDLt%24PND a bot:Element, mep:Outlet, mep:Outlet-POWEROUTLET ;
+    rdfs:label "Plug, living east heater" ;
+    dcterms:identifier "0x$j_PQ7DvIgJOqDLt$PND" .
+inst:00rRd4hB4LJxqvzyZFGBNX a bot:Element, mep:SpaceHeater, mep:SpaceHeater-CONVECTOR ;
+    rdfs:label "Heater, bathroom" ;
+    dcterms:identifier "00rRd4hB4LJxqvzyZFGBNX" .
+inst:17Q9ydsRULzHxP5YKlnOwI a bot:Element, mep:Outlet, mep:Outlet-POWEROUTLET ;
+    rdfs:label "Plug, bathroom heater" ;
+    dcterms:identifier "17Q9ydsRULzHxP5YKlnOwI" .
+inst:2Ut6i6GuUtaViOPeDTXG9h a bot:Element, mep:ElectricAppliance, mep:ElectricAppliance-FREESTANDINGWATERHEATER ;
+    rdfs:label "Water heater, 30 l" ;
+    dcterms:identifier "2Ut6i6GuUtaViOPeDTXG9h" .
+inst:1ZgLf3BEIY2wWkSKUeDGt7 a bot:Element, mep:SanitaryTerminal, mep:SanitaryTerminal-WASHHANDBASIN ;
+    rdfs:label "Bathroom basin" ;
+    dcterms:identifier "1ZgLf3BEIY2wWkSKUeDGt7" .
+inst:0qJNpgU2UGud%24IYQvzwf3z a bot:Element, mep:SanitaryTerminal, mep:SanitaryTerminal-SHOWER ;
+    rdfs:label "Shower cabin" ;
+    dcterms:identifier "0qJNpgU2UGud$IYQvzwf3z" .
+inst:3SHosRbbzvCvYo_OHDkYuG a bot:Element, mep:SanitaryTerminal, mep:SanitaryTerminal-TOILETPAN ;
+    rdfs:label "Toilet, Cinderella Classic" ;
+    dcterms:identifier "3SHosRbbzvCvYo_OHDkYuG" .
+inst:1T%24dMtd_3LYtBmNsTE0PbT a bot:Element, mep:DuctSegment, mep:DuctSegment-RIGIDSEGMENT ;
+    rdfs:label "Toilet flue, through the east wall" ;
+    dcterms:identifier "1T$dMtd_3LYtBmNsTE0PbT" .
+inst:2mEPsoauC9z_ra5gkOMt_q a bot:Element, mep:DuctSegment, mep:DuctSegment-RIGIDSEGMENT ;
+    rdfs:label "Toilet flue, riser outside" ;
+    dcterms:identifier "2mEPsoauC9z_ra5gkOMt_q" .
+inst:3u5MyvjHVRaloEq9mtHkcX a bot:Element, mep:PipeSegment, mep:PipeSegment-RIGIDSEGMENT ;
+    rdfs:label "Cold water service entry" ;
+    dcterms:identifier "3u5MyvjHVRaloEq9mtHkcX" .
+inst:26Yfzdx5fllUmGubtyWnuT a bot:Element, mep:PipeSegment, mep:PipeSegment-RIGIDSEGMENT ;
+    rdfs:label "Cold water main" ;
+    dcterms:identifier "26Yfzdx5fllUmGubtyWnuT" .
+inst:2sdwtEltCMCjtQN%24BjpPVN a bot:Element, mep:PipeSegment, mep:PipeSegment-RIGIDSEGMENT ;
+    rdfs:label "Cold branch, water heater" ;
+    dcterms:identifier "2sdwtEltCMCjtQN$BjpPVN" .
+inst:12Q80x1yqnrukodI7k4Sgo a bot:Element, mep:PipeSegment, mep:PipeSegment-RIGIDSEGMENT ;
+    rdfs:label "Cold branch, bathroom basin" ;
+    dcterms:identifier "12Q80x1yqnrukodI7k4Sgo" .
+inst:2EkWyAArNyMG7Kw_BnBNFG a bot:Element, mep:PipeSegment, mep:PipeSegment-RIGIDSEGMENT ;
+    rdfs:label "Cold branch, shower" ;
+    dcterms:identifier "2EkWyAArNyMG7Kw_BnBNFG" .
+inst:1Sm8nA7E_FgWN363fXF2iB a bot:Element, mep:PipeSegment, mep:PipeSegment-RIGIDSEGMENT ;
+    rdfs:label "Hot water drop from heater" ;
+    dcterms:identifier "1Sm8nA7E_FgWN363fXF2iB" .
+inst:0E_VeernXcqnuLypB9FwBT a bot:Element, mep:PipeSegment, mep:PipeSegment-RIGIDSEGMENT ;
+    rdfs:label "Hot water main, west to the kitchen" ;
+    dcterms:identifier "0E_VeernXcqnuLypB9FwBT" .
+inst:1z%24iy2oOVt1OG00eGdZPDl a bot:Element, mep:PipeSegment, mep:PipeSegment-RIGIDSEGMENT ;
+    rdfs:label "Hot water main, east to the bathroom" ;
+    dcterms:identifier "1z$iy2oOVt1OG00eGdZPDl" .
+inst:23PVxkWIkhD4853MRn991G a bot:Element, mep:PipeSegment, mep:PipeSegment-RIGIDSEGMENT ;
+    rdfs:label "Hot branch, kitchen sink" ;
+    dcterms:identifier "23PVxkWIkhD4853MRn991G" .
+inst:2r%24RXteHtUq1L6C9QZhGcE a bot:Element, mep:PipeSegment, mep:PipeSegment-RIGIDSEGMENT ;
+    rdfs:label "Hot branch, bathroom basin" ;
+    dcterms:identifier "2r$RXteHtUq1L6C9QZhGcE" .
+inst:3D6MzUzZHc1%24ftItzeIRv%24 a bot:Element, mep:PipeSegment, mep:PipeSegment-RIGIDSEGMENT ;
+    rdfs:label "Hot branch, shower" ;
+    dcterms:identifier "3D6MzUzZHc1$ftItzeIRv$" .
+inst:0Ye3KJAV2KOz2FG2rUUIzX a bot:Element, mep:PipeSegment, mep:PipeSegment-RIGIDSEGMENT ;
+    rdfs:label "Kitchen sink drain" ;
+    dcterms:identifier "0Ye3KJAV2KOz2FG2rUUIzX" .
+inst:2CaBsthnf4fD9HRPdKSTOa a bot:Element, mep:PipeSegment, mep:PipeSegment-RIGIDSEGMENT ;
+    rdfs:label "Kitchen drain to the pit" ;
+    dcterms:identifier "2CaBsthnf4fD9HRPdKSTOa" .
+inst:2VWgSfIZpbwBEsW9NfZSBd a bot:Element, mep:PipeSegment, mep:PipeSegment-RIGIDSEGMENT ;
+    rdfs:label "Bathroom basin drain" ;
+    dcterms:identifier "2VWgSfIZpbwBEsW9NfZSBd" .
+inst:3Pnyc%24xgPxVPcvGwzw4766 a bot:Element, mep:PipeSegment, mep:PipeSegment-RIGIDSEGMENT ;
+    rdfs:label "Shower drain" ;
+    dcterms:identifier "3Pnyc$xgPxVPcvGwzw4766" .
+inst:01tGX3U3QaDcAZWMU2SoBl a bot:Element, mep:PipeSegment, mep:PipeSegment-RIGIDSEGMENT ;
+    rdfs:label "Shower drain, joining the bathroom drain" ;
+    dcterms:identifier "01tGX3U3QaDcAZWMU2SoBl" .
+inst:1ftJWs35rZgx09bETaiqkF a bot:Element, mep:PipeSegment, mep:PipeSegment-RIGIDSEGMENT ;
+    rdfs:label "Bathroom drain to the pit" ;
+    dcterms:identifier "1ftJWs35rZgx09bETaiqkF" .
+inst:3Ep3E0pS3aGlQvjnMrgMd6 a bot:Element, mep:DistributionChamberElement, mep:DistributionChamberElement-SUMP ;
+    rdfs:label "Greywater pit" ;
+    dcterms:identifier "3Ep3E0pS3aGlQvjnMrgMd6" .
+inst:0eZM5gNDYXC7zQxTA3SS7g a bot:Element, mep:Sensor, mep:Sensor-TEMPERATURESENSOR ;
+    rdfs:label "NetAtmo base module" ;
+    dcterms:identifier "0eZM5gNDYXC7zQxTA3SS7g" .
+inst:3n4EuHrZvBtnv3m1%24RVoYN a bot:Element, mep:Sensor, mep:Sensor-TEMPERATURESENSOR ;
+    rdfs:label "NetAtmo outdoor module" ;
+    dcterms:identifier "3n4EuHrZvBtnv3m1$RVoYN" .
+inst:3%24JcPSI2OtTkRTWYBjoVQd a bot:Element, mep:Sensor, mep:Sensor-HUMIDITYSENSOR ;
+    rdfs:label "NetAtmo bathroom module" ;
+    dcterms:identifier "3$JcPSI2OtTkRTWYBjoVQd" .
+inst:24LasyssjGEZnDVRNGgUyu a bot:Element ;
+    rdfs:label "Wind gauge mast" ;
+    dcterms:identifier "24LasyssjGEZnDVRNGgUyu" .
+inst:3rx1J3GUAHiNk2vHUTdA49 a bot:Element, mep:Sensor, mep:Sensor-WINDSENSOR ;
+    rdfs:label "NetAtmo wind gauge" ;
+    dcterms:identifier "3rx1J3GUAHiNk2vHUTdA49" .
+
+# No building or distribution element class for: IFCFURNISHINGELEMENT.
+# They are bot:Element only, rather than given a class that may not exist.
+
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:2PRhysAsnVP_NSJoazK6GC .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:0UfH1vrLfsw0epPFcMJArB .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:0cBMjNcFAYWuf1Yu2rQsgH .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:086sdHFwwt7nf0nr%24SCRPf .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:31X4tdKIuGys115sYb3sIy .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:0Bls%24r9uNT66%24h8vuRsQfB .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:0ve3NA6yXEhD_QsRVBcP3R .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:2Bf3FPwjkUtFMJiyL%24JYNG .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:3f0B%2462V67PfzIvpWp3Whz .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:3AZR6dRbw_Ql5bzO2az8Ym .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:2OKuZNApK4g5E2gvq2s91L .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:2VawPYkraIx6OAXbp3rQm4 .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:0oqR3rZIAMQOfuh1Jsl6gH .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:25fCQSB%24x%24UFG2snPgDt0P .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:16jEQpq8zY2D4KIpyupimP .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:29uO8rpjgWILPQSkF5O6yb .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:2xxuou0fenRZFg63mYIksn .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:39J88Z8Zi35d65D6_NVb8w .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:3YWkF0dKlffxWmHPy%24nP%24a .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:07ZmmOJZPnKTUimOw3_9bd .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:1w9pufr1TDe0VYOM7FKvY2 .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:1Aqw6GVG5u4RDIBFUfdtOY .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:3hJfcua12i9FGbhVXnRId8 .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:1kniNBiD9YSedPh2pFmn23 .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:2w8AUa1Ac61mbmqayNgmeh .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:2img9d4rixPieKQAp%24z4_i .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:1T%24dMtd_3LYtBmNsTE0PbT .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:2mEPsoauC9z_ra5gkOMt_q .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:3u5MyvjHVRaloEq9mtHkcX .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:26Yfzdx5fllUmGubtyWnuT .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:2sdwtEltCMCjtQN%24BjpPVN .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:12Q80x1yqnrukodI7k4Sgo .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:2EkWyAArNyMG7Kw_BnBNFG .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:1Sm8nA7E_FgWN363fXF2iB .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:0E_VeernXcqnuLypB9FwBT .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:1z%24iy2oOVt1OG00eGdZPDl .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:23PVxkWIkhD4853MRn991G .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:2r%24RXteHtUq1L6C9QZhGcE .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:3D6MzUzZHc1%24ftItzeIRv%24 .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:0Ye3KJAV2KOz2FG2rUUIzX .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:2CaBsthnf4fD9HRPdKSTOa .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:2VWgSfIZpbwBEsW9NfZSBd .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:3Pnyc%24xgPxVPcvGwzw4766 .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:01tGX3U3QaDcAZWMU2SoBl .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:1ftJWs35rZgx09bETaiqkF .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:3Ep3E0pS3aGlQvjnMrgMd6 .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:3n4EuHrZvBtnv3m1%24RVoYN .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:24LasyssjGEZnDVRNGgUyu .
+inst:2xIpuRJ8qeHpBXBvT0C42n bot:containsElement inst:3rx1J3GUAHiNk2vHUTdA49 .
+inst:3Ku0xXoV%24PR9jlVvMw9yFe bot:containsElement inst:00rRd4hB4LJxqvzyZFGBNX .
+inst:3Ku0xXoV%24PR9jlVvMw9yFe bot:containsElement inst:17Q9ydsRULzHxP5YKlnOwI .
+inst:3Ku0xXoV%24PR9jlVvMw9yFe bot:containsElement inst:1ZgLf3BEIY2wWkSKUeDGt7 .
+inst:3Ku0xXoV%24PR9jlVvMw9yFe bot:containsElement inst:0qJNpgU2UGud%24IYQvzwf3z .
+inst:3Ku0xXoV%24PR9jlVvMw9yFe bot:containsElement inst:3SHosRbbzvCvYo_OHDkYuG .
+inst:3Ku0xXoV%24PR9jlVvMw9yFe bot:containsElement inst:3%24JcPSI2OtTkRTWYBjoVQd .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:containsElement inst:1B48B9CY37EjuwTDPWCsax .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:containsElement inst:3NdV9knk8KuCkIOV1HQI3%24 .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:containsElement inst:2pmrujdo%24lH2cY7LdVhmWz .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:containsElement inst:3VhTsxpaNaG5FYxzGA7pXB .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:containsElement inst:2mPoLgI_oIPvQ44dKqLmyL .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:containsElement inst:3Y5XgJhSzGL_XiTyBq12zQ .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:containsElement inst:0kLyU0NRsxxGyxPRyFr6c4 .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:containsElement inst:0Z1oQk0Tfe6BlcQETimvQP .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:containsElement inst:3sJlA8CUlQzk3nuE8p1BJR .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:containsElement inst:0mY0C__ReYxMT4prbNwp7J .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:containsElement inst:0x%24j_PQ7DvIgJOqDLt%24PND .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:containsElement inst:2Ut6i6GuUtaViOPeDTXG9h .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:containsElement inst:0eZM5gNDYXC7zQxTA3SS7g .
+
+# ---------------------------------------------------------------- what hosts what
+inst:0UfH1vrLfsw0epPFcMJArB bot:hostsElement inst:25fCQSB%24x%24UFG2snPgDt0P .
+inst:0UfH1vrLfsw0epPFcMJArB bot:hostsElement inst:16jEQpq8zY2D4KIpyupimP .
+inst:0UfH1vrLfsw0epPFcMJArB bot:hostsElement inst:29uO8rpjgWILPQSkF5O6yb .
+inst:0cBMjNcFAYWuf1Yu2rQsgH bot:hostsElement inst:2xxuou0fenRZFg63mYIksn .
+inst:0cBMjNcFAYWuf1Yu2rQsgH bot:hostsElement inst:39J88Z8Zi35d65D6_NVb8w .
+inst:0Bls%24r9uNT66%24h8vuRsQfB bot:hostsElement inst:3YWkF0dKlffxWmHPy%24nP%24a .
+inst:0ve3NA6yXEhD_QsRVBcP3R bot:hostsElement inst:07ZmmOJZPnKTUimOw3_9bd .
+inst:2Bf3FPwjkUtFMJiyL%24JYNG bot:hostsElement inst:1w9pufr1TDe0VYOM7FKvY2 .
+inst:2OKuZNApK4g5E2gvq2s91L bot:hostsElement inst:1Aqw6GVG5u4RDIBFUfdtOY .
+inst:0oqR3rZIAMQOfuh1Jsl6gH bot:hostsElement inst:3hJfcua12i9FGbhVXnRId8 .
+
+# ---------------------------------------------------------------- what bounds what
+inst:1WolMsTTOxgH8jOQxaOSpY bot:adjacentElement inst:0UfH1vrLfsw0epPFcMJArB .
+inst:interface-1 a bot:Interface ; bot:interfaceOf inst:1WolMsTTOxgH8jOQxaOSpY, inst:0UfH1vrLfsw0epPFcMJArB ; cot:boundaryFacing "EXTERNAL" .
+inst:1WolMsTTOxgH8jOQxaOSpY bot:adjacentElement inst:16jEQpq8zY2D4KIpyupimP .
+inst:interface-2 a bot:Interface ; bot:interfaceOf inst:1WolMsTTOxgH8jOQxaOSpY, inst:16jEQpq8zY2D4KIpyupimP ; cot:boundaryFacing "EXTERNAL" .
+inst:1WolMsTTOxgH8jOQxaOSpY bot:adjacentElement inst:3f0B%2462V67PfzIvpWp3Whz .
+inst:interface-3 a bot:Interface ; bot:interfaceOf inst:1WolMsTTOxgH8jOQxaOSpY, inst:3f0B%2462V67PfzIvpWp3Whz ; cot:boundaryFacing "INTERNAL" .
+inst:1WolMsTTOxgH8jOQxaOSpY bot:adjacentElement inst:3AZR6dRbw_Ql5bzO2az8Ym .
+inst:interface-4 a bot:Interface ; bot:interfaceOf inst:1WolMsTTOxgH8jOQxaOSpY, inst:3AZR6dRbw_Ql5bzO2az8Ym ; cot:boundaryFacing "INTERNAL" .
+inst:1WolMsTTOxgH8jOQxaOSpY bot:adjacentElement inst:2OKuZNApK4g5E2gvq2s91L .
+inst:interface-5 a bot:Interface ; bot:interfaceOf inst:1WolMsTTOxgH8jOQxaOSpY, inst:2OKuZNApK4g5E2gvq2s91L ; cot:boundaryFacing "INTERNAL" .
+inst:1WolMsTTOxgH8jOQxaOSpY bot:adjacentElement inst:1Aqw6GVG5u4RDIBFUfdtOY .
+inst:interface-6 a bot:Interface ; bot:interfaceOf inst:1WolMsTTOxgH8jOQxaOSpY, inst:1Aqw6GVG5u4RDIBFUfdtOY ; cot:boundaryFacing "INTERNAL" .
+inst:1WolMsTTOxgH8jOQxaOSpY bot:adjacentElement inst:2PRhysAsnVP_NSJoazK6GC .
+inst:interface-7 a bot:Interface ; bot:interfaceOf inst:1WolMsTTOxgH8jOQxaOSpY, inst:2PRhysAsnVP_NSJoazK6GC ; cot:boundaryFacing "EXTERNAL" .
+inst:1WolMsTTOxgH8jOQxaOSpY bot:adjacentElement inst:1kniNBiD9YSedPh2pFmn23 .
+inst:interface-8 a bot:Interface ; bot:interfaceOf inst:1WolMsTTOxgH8jOQxaOSpY, inst:1kniNBiD9YSedPh2pFmn23 ; cot:boundaryFacing "EXTERNAL" .
+inst:3Ku0xXoV%24PR9jlVvMw9yFe bot:adjacentElement inst:0UfH1vrLfsw0epPFcMJArB .
+inst:interface-9 a bot:Interface ; bot:interfaceOf inst:3Ku0xXoV%24PR9jlVvMw9yFe, inst:0UfH1vrLfsw0epPFcMJArB ; cot:boundaryFacing "EXTERNAL" .
+inst:3Ku0xXoV%24PR9jlVvMw9yFe bot:adjacentElement inst:29uO8rpjgWILPQSkF5O6yb .
+inst:interface-10 a bot:Interface ; bot:interfaceOf inst:3Ku0xXoV%24PR9jlVvMw9yFe, inst:29uO8rpjgWILPQSkF5O6yb ; cot:boundaryFacing "EXTERNAL" .
+inst:3Ku0xXoV%24PR9jlVvMw9yFe bot:adjacentElement inst:31X4tdKIuGys115sYb3sIy .
+inst:interface-11 a bot:Interface ; bot:interfaceOf inst:3Ku0xXoV%24PR9jlVvMw9yFe, inst:31X4tdKIuGys115sYb3sIy ; cot:boundaryFacing "EXTERNAL" .
+inst:3Ku0xXoV%24PR9jlVvMw9yFe bot:adjacentElement inst:2VawPYkraIx6OAXbp3rQm4 .
+inst:interface-12 a bot:Interface ; bot:interfaceOf inst:3Ku0xXoV%24PR9jlVvMw9yFe, inst:2VawPYkraIx6OAXbp3rQm4 ; cot:boundaryFacing "INTERNAL" .
+inst:3Ku0xXoV%24PR9jlVvMw9yFe bot:adjacentElement inst:0oqR3rZIAMQOfuh1Jsl6gH .
+inst:interface-13 a bot:Interface ; bot:interfaceOf inst:3Ku0xXoV%24PR9jlVvMw9yFe, inst:0oqR3rZIAMQOfuh1Jsl6gH ; cot:boundaryFacing "INTERNAL" .
+inst:3Ku0xXoV%24PR9jlVvMw9yFe bot:adjacentElement inst:3hJfcua12i9FGbhVXnRId8 .
+inst:interface-14 a bot:Interface ; bot:interfaceOf inst:3Ku0xXoV%24PR9jlVvMw9yFe, inst:3hJfcua12i9FGbhVXnRId8 ; cot:boundaryFacing "INTERNAL" .
+inst:3Ku0xXoV%24PR9jlVvMw9yFe bot:adjacentElement inst:2PRhysAsnVP_NSJoazK6GC .
+inst:interface-15 a bot:Interface ; bot:interfaceOf inst:3Ku0xXoV%24PR9jlVvMw9yFe, inst:2PRhysAsnVP_NSJoazK6GC ; cot:boundaryFacing "EXTERNAL" .
+inst:3Ku0xXoV%24PR9jlVvMw9yFe bot:adjacentElement inst:1kniNBiD9YSedPh2pFmn23 .
+inst:interface-16 a bot:Interface ; bot:interfaceOf inst:3Ku0xXoV%24PR9jlVvMw9yFe, inst:1kniNBiD9YSedPh2pFmn23 ; cot:boundaryFacing "EXTERNAL" .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:adjacentElement inst:0UfH1vrLfsw0epPFcMJArB .
+inst:interface-17 a bot:Interface ; bot:interfaceOf inst:3h6%243R33ye%24kqziK0VEzg7, inst:0UfH1vrLfsw0epPFcMJArB ; cot:boundaryFacing "EXTERNAL" .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:adjacentElement inst:25fCQSB%24x%24UFG2snPgDt0P .
+inst:interface-18 a bot:Interface ; bot:interfaceOf inst:3h6%243R33ye%24kqziK0VEzg7, inst:25fCQSB%24x%24UFG2snPgDt0P ; cot:boundaryFacing "EXTERNAL" .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:adjacentElement inst:0cBMjNcFAYWuf1Yu2rQsgH .
+inst:interface-19 a bot:Interface ; bot:interfaceOf inst:3h6%243R33ye%24kqziK0VEzg7, inst:0cBMjNcFAYWuf1Yu2rQsgH ; cot:boundaryFacing "EXTERNAL" .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:adjacentElement inst:2xxuou0fenRZFg63mYIksn .
+inst:interface-20 a bot:Interface ; bot:interfaceOf inst:3h6%243R33ye%24kqziK0VEzg7, inst:2xxuou0fenRZFg63mYIksn ; cot:boundaryFacing "EXTERNAL" .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:adjacentElement inst:39J88Z8Zi35d65D6_NVb8w .
+inst:interface-21 a bot:Interface ; bot:interfaceOf inst:3h6%243R33ye%24kqziK0VEzg7, inst:39J88Z8Zi35d65D6_NVb8w ; cot:boundaryFacing "EXTERNAL" .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:adjacentElement inst:086sdHFwwt7nf0nr%24SCRPf .
+inst:interface-22 a bot:Interface ; bot:interfaceOf inst:3h6%243R33ye%24kqziK0VEzg7, inst:086sdHFwwt7nf0nr%24SCRPf ; cot:boundaryFacing "EXTERNAL" .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:adjacentElement inst:31X4tdKIuGys115sYb3sIy .
+inst:interface-23 a bot:Interface ; bot:interfaceOf inst:3h6%243R33ye%24kqziK0VEzg7, inst:31X4tdKIuGys115sYb3sIy ; cot:boundaryFacing "EXTERNAL" .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:adjacentElement inst:0Bls%24r9uNT66%24h8vuRsQfB .
+inst:interface-24 a bot:Interface ; bot:interfaceOf inst:3h6%243R33ye%24kqziK0VEzg7, inst:0Bls%24r9uNT66%24h8vuRsQfB ; cot:boundaryFacing "EXTERNAL" .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:adjacentElement inst:3YWkF0dKlffxWmHPy%24nP%24a .
+inst:interface-25 a bot:Interface ; bot:interfaceOf inst:3h6%243R33ye%24kqziK0VEzg7, inst:3YWkF0dKlffxWmHPy%24nP%24a ; cot:boundaryFacing "EXTERNAL" .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:adjacentElement inst:0ve3NA6yXEhD_QsRVBcP3R .
+inst:interface-26 a bot:Interface ; bot:interfaceOf inst:3h6%243R33ye%24kqziK0VEzg7, inst:0ve3NA6yXEhD_QsRVBcP3R ; cot:boundaryFacing "EXTERNAL" .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:adjacentElement inst:07ZmmOJZPnKTUimOw3_9bd .
+inst:interface-27 a bot:Interface ; bot:interfaceOf inst:3h6%243R33ye%24kqziK0VEzg7, inst:07ZmmOJZPnKTUimOw3_9bd ; cot:boundaryFacing "EXTERNAL" .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:adjacentElement inst:2Bf3FPwjkUtFMJiyL%24JYNG .
+inst:interface-28 a bot:Interface ; bot:interfaceOf inst:3h6%243R33ye%24kqziK0VEzg7, inst:2Bf3FPwjkUtFMJiyL%24JYNG ; cot:boundaryFacing "EXTERNAL" .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:adjacentElement inst:1w9pufr1TDe0VYOM7FKvY2 .
+inst:interface-29 a bot:Interface ; bot:interfaceOf inst:3h6%243R33ye%24kqziK0VEzg7, inst:1w9pufr1TDe0VYOM7FKvY2 ; cot:boundaryFacing "EXTERNAL" .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:adjacentElement inst:3f0B%2462V67PfzIvpWp3Whz .
+inst:interface-30 a bot:Interface ; bot:interfaceOf inst:3h6%243R33ye%24kqziK0VEzg7, inst:3f0B%2462V67PfzIvpWp3Whz ; cot:boundaryFacing "INTERNAL" .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:adjacentElement inst:3AZR6dRbw_Ql5bzO2az8Ym .
+inst:interface-31 a bot:Interface ; bot:interfaceOf inst:3h6%243R33ye%24kqziK0VEzg7, inst:3AZR6dRbw_Ql5bzO2az8Ym ; cot:boundaryFacing "INTERNAL" .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:adjacentElement inst:2OKuZNApK4g5E2gvq2s91L .
+inst:interface-32 a bot:Interface ; bot:interfaceOf inst:3h6%243R33ye%24kqziK0VEzg7, inst:2OKuZNApK4g5E2gvq2s91L ; cot:boundaryFacing "INTERNAL" .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:adjacentElement inst:1Aqw6GVG5u4RDIBFUfdtOY .
+inst:interface-33 a bot:Interface ; bot:interfaceOf inst:3h6%243R33ye%24kqziK0VEzg7, inst:1Aqw6GVG5u4RDIBFUfdtOY ; cot:boundaryFacing "INTERNAL" .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:adjacentElement inst:2VawPYkraIx6OAXbp3rQm4 .
+inst:interface-34 a bot:Interface ; bot:interfaceOf inst:3h6%243R33ye%24kqziK0VEzg7, inst:2VawPYkraIx6OAXbp3rQm4 ; cot:boundaryFacing "INTERNAL" .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:adjacentElement inst:0oqR3rZIAMQOfuh1Jsl6gH .
+inst:interface-35 a bot:Interface ; bot:interfaceOf inst:3h6%243R33ye%24kqziK0VEzg7, inst:0oqR3rZIAMQOfuh1Jsl6gH ; cot:boundaryFacing "INTERNAL" .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:adjacentElement inst:3hJfcua12i9FGbhVXnRId8 .
+inst:interface-36 a bot:Interface ; bot:interfaceOf inst:3h6%243R33ye%24kqziK0VEzg7, inst:3hJfcua12i9FGbhVXnRId8 ; cot:boundaryFacing "INTERNAL" .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:adjacentElement inst:2PRhysAsnVP_NSJoazK6GC .
+inst:interface-37 a bot:Interface ; bot:interfaceOf inst:3h6%243R33ye%24kqziK0VEzg7, inst:2PRhysAsnVP_NSJoazK6GC ; cot:boundaryFacing "EXTERNAL" .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:adjacentElement inst:1kniNBiD9YSedPh2pFmn23 .
+inst:interface-38 a bot:Interface ; bot:interfaceOf inst:3h6%243R33ye%24kqziK0VEzg7, inst:1kniNBiD9YSedPh2pFmn23 ; cot:boundaryFacing "EXTERNAL" .
+inst:3h6%243R33ye%24kqziK0VEzg7 bot:adjacentElement inst:2w8AUa1Ac61mbmqayNgmeh .
+inst:interface-39 a bot:Interface ; bot:interfaceOf inst:3h6%243R33ye%24kqziK0VEzg7, inst:2w8AUa1Ac61mbmqayNgmeh ; cot:boundaryFacing "EXTERNAL" .
+
+# ---------------------------------------------------------------- products, and the elements that realise them
+inst:1FWdkg0Gv5kQGxROhTn7%24k a bpo:Product, bpo:Element ;
+    rdfs:label "Aqara smart plug" ;
+    dcterms:identifier "1FWdkg0Gv5kQGxROhTn7$k" .
+inst:0kLyU0NRsxxGyxPRyFr6c4 a bpo:SingularEntity ; bpo:realisesObject inst:1FWdkg0Gv5kQGxROhTn7%24k .
+inst:3sJlA8CUlQzk3nuE8p1BJR a bpo:SingularEntity ; bpo:realisesObject inst:1FWdkg0Gv5kQGxROhTn7%24k .
+inst:0x%24j_PQ7DvIgJOqDLt%24PND a bpo:SingularEntity ; bpo:realisesObject inst:1FWdkg0Gv5kQGxROhTn7%24k .
+inst:17Q9ydsRULzHxP5YKlnOwI a bpo:SingularEntity ; bpo:realisesObject inst:1FWdkg0Gv5kQGxROhTn7%24k .
+inst:2nWUwWJtQIXSUC5R7%24vbuw a bpo:Product, bpo:Element ;
+    rdfs:label "Door 700 x 2040" ;
+    dcterms:identifier "2nWUwWJtQIXSUC5R7$vbuw" .
+inst:3hJfcua12i9FGbhVXnRId8 a bpo:SingularEntity ; bpo:realisesObject inst:2nWUwWJtQIXSUC5R7%24vbuw .
+inst:0rlVEKMfp06DG%240U7vSKGj a bpo:Product, bpo:Element ;
+    rdfs:label "Door 800 x 2040" ;
+    dcterms:identifier "0rlVEKMfp06DG$0U7vSKGj" .
+inst:1Aqw6GVG5u4RDIBFUfdtOY a bpo:SingularEntity ; bpo:realisesObject inst:0rlVEKMfp06DG%240U7vSKGj .
+inst:3dKXEy_vwkDECl6CZyB5J3 a bpo:Product, bpo:Element ;
+    rdfs:label "Door 900 x 2040" ;
+    dcterms:identifier "3dKXEy_vwkDECl6CZyB5J3" .
+inst:39J88Z8Zi35d65D6_NVb8w a bpo:SingularEntity ; bpo:realisesObject inst:3dKXEy_vwkDECl6CZyB5J3 .
+inst:3bdPueGarDyU%24a87obXHz9 a bpo:Product, bpo:Element ;
+    rdfs:label "Duct 110 mm" ;
+    dcterms:identifier "3bdPueGarDyU$a87obXHz9" .
+inst:1T%24dMtd_3LYtBmNsTE0PbT a bpo:SingularEntity ; bpo:realisesObject inst:3bdPueGarDyU%24a87obXHz9 .
+inst:2mEPsoauC9z_ra5gkOMt_q a bpo:SingularEntity ; bpo:realisesObject inst:3bdPueGarDyU%24a87obXHz9 .
+inst:2cWbPWpKSV9pB%24E9iux4go a bpo:Product, bpo:Element ;
+    rdfs:label "Electric cooker" ;
+    dcterms:identifier "2cWbPWpKSV9pB$E9iux4go" .
+inst:3VhTsxpaNaG5FYxzGA7pXB a bpo:SingularEntity ; bpo:realisesObject inst:2cWbPWpKSV9pB%24E9iux4go .
+inst:319gvN_KvC4UHgkIk4CAA_ a bpo:Product, bpo:Element ;
+    rdfs:label "Exterior wall 170" ;
+    dcterms:identifier "319gvN_KvC4UHgkIk4CAA_" .
+inst:0UfH1vrLfsw0epPFcMJArB a bpo:SingularEntity ; bpo:realisesObject inst:319gvN_KvC4UHgkIk4CAA_ .
+inst:0cBMjNcFAYWuf1Yu2rQsgH a bpo:SingularEntity ; bpo:realisesObject inst:319gvN_KvC4UHgkIk4CAA_ .
+inst:086sdHFwwt7nf0nr%24SCRPf a bpo:SingularEntity ; bpo:realisesObject inst:319gvN_KvC4UHgkIk4CAA_ .
+inst:31X4tdKIuGys115sYb3sIy a bpo:SingularEntity ; bpo:realisesObject inst:319gvN_KvC4UHgkIk4CAA_ .
+inst:0Bls%24r9uNT66%24h8vuRsQfB a bpo:SingularEntity ; bpo:realisesObject inst:319gvN_KvC4UHgkIk4CAA_ .
+inst:0ve3NA6yXEhD_QsRVBcP3R a bpo:SingularEntity ; bpo:realisesObject inst:319gvN_KvC4UHgkIk4CAA_ .
+inst:2Bf3FPwjkUtFMJiyL%24JYNG a bpo:SingularEntity ; bpo:realisesObject inst:319gvN_KvC4UHgkIk4CAA_ .
+inst:2img9d4rixPieKQAp%24z4_i a bpo:SingularEntity ; bpo:realisesObject inst:319gvN_KvC4UHgkIk4CAA_ .
+inst:12Ovwn8YuJs2EtTNKQbj3M a bpo:Product, bpo:Element ;
+    rdfs:label "Floor slab 150" ;
+    dcterms:identifier "12Ovwn8YuJs2EtTNKQbj3M" .
+inst:2PRhysAsnVP_NSJoazK6GC a bpo:SingularEntity ; bpo:realisesObject inst:12Ovwn8YuJs2EtTNKQbj3M .
+inst:2Lqr77tuv4fMTSzPmpd3BQ a bpo:Product, bpo:Element ;
+    rdfs:label "Gable roof" ;
+    dcterms:identifier "2Lqr77tuv4fMTSzPmpd3BQ" .
+inst:2w8AUa1Ac61mbmqayNgmeh a bpo:SingularEntity ; bpo:realisesObject inst:2Lqr77tuv4fMTSzPmpd3BQ .
+inst:3sdPBks_110UmzwkxBa_ae a bpo:Product, bpo:Element ;
+    rdfs:label "Greywater pit" ;
+    dcterms:identifier "3sdPBks_110UmzwkxBa_ae" .
+inst:3Ep3E0pS3aGlQvjnMrgMd6 a bpo:SingularEntity ; bpo:realisesObject inst:3sdPBks_110UmzwkxBa_ae .
+inst:3PSMJPLsqqKsX3Wb%24bmcxT a bpo:Product, bpo:Element ;
+    rdfs:label "Hipped roof" ;
+    dcterms:identifier "3PSMJPLsqqKsX3Wb$bmcxT" .
+inst:1kniNBiD9YSedPh2pFmn23 a bpo:SingularEntity ; bpo:realisesObject inst:3PSMJPLsqqKsX3Wb%24bmcxT .
+inst:1k99nfs5WhXigElcRMJg70 a bpo:Product, bpo:Element ;
+    rdfs:label "Incinerating toilet, Cinderella Classic" ;
+    dcterms:identifier "1k99nfs5WhXigElcRMJg70" .
+inst:3SHosRbbzvCvYo_OHDkYuG a bpo:SingularEntity ; bpo:realisesObject inst:1k99nfs5WhXigElcRMJg70 .
+inst:156UBXYF8w5oMl1dz_YbJy a bpo:Product, bpo:Element ;
+    rdfs:label "Kitchen sink" ;
+    dcterms:identifier "156UBXYF8w5oMl1dz_YbJy" .
+inst:2pmrujdo%24lH2cY7LdVhmWz a bpo:SingularEntity ; bpo:realisesObject inst:156UBXYF8w5oMl1dz_YbJy .
+inst:1l9rGqh_gJZoHsdeR1KrGo a bpo:Product, bpo:Element ;
+    rdfs:label "Kitchen unit" ;
+    dcterms:identifier "1l9rGqh_gJZoHsdeR1KrGo" .
+inst:1B48B9CY37EjuwTDPWCsax a bpo:SingularEntity ; bpo:realisesObject inst:1l9rGqh_gJZoHsdeR1KrGo .
+inst:3NdV9knk8KuCkIOV1HQI3%24 a bpo:SingularEntity ; bpo:realisesObject inst:1l9rGqh_gJZoHsdeR1KrGo .
+inst:2EUS1AQvYzMz9BMzTvY8Bs a bpo:Product, bpo:Element ;
+    rdfs:label "Mast" ;
+    dcterms:identifier "2EUS1AQvYzMz9BMzTvY8Bs" .
+inst:24LasyssjGEZnDVRNGgUyu a bpo:SingularEntity ; bpo:realisesObject inst:2EUS1AQvYzMz9BMzTvY8Bs .
+inst:0aY726HHY_J7Low075Q9rj a bpo:Product, bpo:Element ;
+    rdfs:label "NetAtmo module, humiditysensor" ;
+    dcterms:identifier "0aY726HHY_J7Low075Q9rj" .
+inst:3%24JcPSI2OtTkRTWYBjoVQd a bpo:SingularEntity ; bpo:realisesObject inst:0aY726HHY_J7Low075Q9rj .
+inst:35umh8QtPIxCkyjth6aHHx a bpo:Product, bpo:Element ;
+    rdfs:label "NetAtmo module, temperaturesensor" ;
+    dcterms:identifier "35umh8QtPIxCkyjth6aHHx" .
+inst:0eZM5gNDYXC7zQxTA3SS7g a bpo:SingularEntity ; bpo:realisesObject inst:35umh8QtPIxCkyjth6aHHx .
+inst:3n4EuHrZvBtnv3m1%24RVoYN a bpo:SingularEntity ; bpo:realisesObject inst:35umh8QtPIxCkyjth6aHHx .
+inst:2O1DUOpB5tnQ4IHIExBR3P a bpo:Product, bpo:Element ;
+    rdfs:label "NetAtmo module, windsensor" ;
+    dcterms:identifier "2O1DUOpB5tnQ4IHIExBR3P" .
+inst:3rx1J3GUAHiNk2vHUTdA49 a bpo:SingularEntity ; bpo:realisesObject inst:2O1DUOpB5tnQ4IHIExBR3P .
+inst:3yk5khJB7J_lJ1GtjLG%24mw a bpo:Product, bpo:Element ;
+    rdfs:label "Panel heater 1000 W" ;
+    dcterms:identifier "3yk5khJB7J_lJ1GtjLG$mw" .
+inst:00rRd4hB4LJxqvzyZFGBNX a bpo:SingularEntity ; bpo:realisesObject inst:3yk5khJB7J_lJ1GtjLG%24mw .
+inst:2YOQScignBFe%24kFZ3FJbbR a bpo:Product, bpo:Element ;
+    rdfs:label "Panel heater 2000 W" ;
+    dcterms:identifier "2YOQScignBFe$kFZ3FJbbR" .
+inst:3Y5XgJhSzGL_XiTyBq12zQ a bpo:SingularEntity ; bpo:realisesObject inst:2YOQScignBFe%24kFZ3FJbbR .
+inst:0Z1oQk0Tfe6BlcQETimvQP a bpo:SingularEntity ; bpo:realisesObject inst:2YOQScignBFe%24kFZ3FJbbR .
+inst:0mY0C__ReYxMT4prbNwp7J a bpo:SingularEntity ; bpo:realisesObject inst:2YOQScignBFe%24kFZ3FJbbR .
+inst:0aeuGtlwsefNQBwPphIj_z a bpo:Product, bpo:Element ;
+    rdfs:label "Partition 95" ;
+    dcterms:identifier "0aeuGtlwsefNQBwPphIj_z" .
+inst:3f0B%2462V67PfzIvpWp3Whz a bpo:SingularEntity ; bpo:realisesObject inst:0aeuGtlwsefNQBwPphIj_z .
+inst:3AZR6dRbw_Ql5bzO2az8Ym a bpo:SingularEntity ; bpo:realisesObject inst:0aeuGtlwsefNQBwPphIj_z .
+inst:2OKuZNApK4g5E2gvq2s91L a bpo:SingularEntity ; bpo:realisesObject inst:0aeuGtlwsefNQBwPphIj_z .
+inst:2VawPYkraIx6OAXbp3rQm4 a bpo:SingularEntity ; bpo:realisesObject inst:0aeuGtlwsefNQBwPphIj_z .
+inst:0oqR3rZIAMQOfuh1Jsl6gH a bpo:SingularEntity ; bpo:realisesObject inst:0aeuGtlwsefNQBwPphIj_z .
+inst:0BpAXjlEJTPMXzEnm_iL5K a bpo:Product, bpo:Element ;
+    rdfs:label "Pipe 22 mm" ;
+    dcterms:identifier "0BpAXjlEJTPMXzEnm_iL5K" .
+inst:12Q80x1yqnrukodI7k4Sgo a bpo:SingularEntity ; bpo:realisesObject inst:0BpAXjlEJTPMXzEnm_iL5K .
+inst:2EkWyAArNyMG7Kw_BnBNFG a bpo:SingularEntity ; bpo:realisesObject inst:0BpAXjlEJTPMXzEnm_iL5K .
+inst:23PVxkWIkhD4853MRn991G a bpo:SingularEntity ; bpo:realisesObject inst:0BpAXjlEJTPMXzEnm_iL5K .
+inst:2r%24RXteHtUq1L6C9QZhGcE a bpo:SingularEntity ; bpo:realisesObject inst:0BpAXjlEJTPMXzEnm_iL5K .
+inst:3D6MzUzZHc1%24ftItzeIRv%24 a bpo:SingularEntity ; bpo:realisesObject inst:0BpAXjlEJTPMXzEnm_iL5K .
+inst:0KPR2GciEa1JzrKSxdxPDR a bpo:Product, bpo:Element ;
+    rdfs:label "Pipe 28 mm" ;
+    dcterms:identifier "0KPR2GciEa1JzrKSxdxPDR" .
+inst:3u5MyvjHVRaloEq9mtHkcX a bpo:SingularEntity ; bpo:realisesObject inst:0KPR2GciEa1JzrKSxdxPDR .
+inst:26Yfzdx5fllUmGubtyWnuT a bpo:SingularEntity ; bpo:realisesObject inst:0KPR2GciEa1JzrKSxdxPDR .
+inst:2sdwtEltCMCjtQN%24BjpPVN a bpo:SingularEntity ; bpo:realisesObject inst:0KPR2GciEa1JzrKSxdxPDR .
+inst:1Sm8nA7E_FgWN363fXF2iB a bpo:SingularEntity ; bpo:realisesObject inst:0KPR2GciEa1JzrKSxdxPDR .
+inst:0E_VeernXcqnuLypB9FwBT a bpo:SingularEntity ; bpo:realisesObject inst:0KPR2GciEa1JzrKSxdxPDR .
+inst:1z%24iy2oOVt1OG00eGdZPDl a bpo:SingularEntity ; bpo:realisesObject inst:0KPR2GciEa1JzrKSxdxPDR .
+inst:2_zf0VVd9dmasYDSRezyHD a bpo:Product, bpo:Element ;
+    rdfs:label "Pipe 75 mm" ;
+    dcterms:identifier "2_zf0VVd9dmasYDSRezyHD" .
+inst:0Ye3KJAV2KOz2FG2rUUIzX a bpo:SingularEntity ; bpo:realisesObject inst:2_zf0VVd9dmasYDSRezyHD .
+inst:2CaBsthnf4fD9HRPdKSTOa a bpo:SingularEntity ; bpo:realisesObject inst:2_zf0VVd9dmasYDSRezyHD .
+inst:2VWgSfIZpbwBEsW9NfZSBd a bpo:SingularEntity ; bpo:realisesObject inst:2_zf0VVd9dmasYDSRezyHD .
+inst:3Pnyc%24xgPxVPcvGwzw4766 a bpo:SingularEntity ; bpo:realisesObject inst:2_zf0VVd9dmasYDSRezyHD .
+inst:01tGX3U3QaDcAZWMU2SoBl a bpo:SingularEntity ; bpo:realisesObject inst:2_zf0VVd9dmasYDSRezyHD .
+inst:1ftJWs35rZgx09bETaiqkF a bpo:SingularEntity ; bpo:realisesObject inst:2_zf0VVd9dmasYDSRezyHD .
+inst:04cPXIUyo%24JjApgKWJc0Vt a bpo:Product, bpo:Element ;
+    rdfs:label "Refrigerator" ;
+    dcterms:identifier "04cPXIUyo$JjApgKWJc0Vt" .
+inst:2mPoLgI_oIPvQ44dKqLmyL a bpo:SingularEntity ; bpo:realisesObject inst:04cPXIUyo%24JjApgKWJc0Vt .
+inst:20DnsdIwqqu9Yum0%24u08i2 a bpo:Product, bpo:Element ;
+    rdfs:label "Shower cabin" ;
+    dcterms:identifier "20DnsdIwqqu9Yum0$u08i2" .
+inst:0qJNpgU2UGud%24IYQvzwf3z a bpo:SingularEntity ; bpo:realisesObject inst:20DnsdIwqqu9Yum0%24u08i2 .
+inst:02atnnk719ikmFK1jyBAU_ a bpo:Product, bpo:Element ;
+    rdfs:label "Wash hand basin" ;
+    dcterms:identifier "02atnnk719ikmFK1jyBAU_" .
+inst:1ZgLf3BEIY2wWkSKUeDGt7 a bpo:SingularEntity ; bpo:realisesObject inst:02atnnk719ikmFK1jyBAU_ .
+inst:3QQFmXpxnAL_i4rN0QOvCC a bpo:Product, bpo:Element ;
+    rdfs:label "Water heater, 30 l" ;
+    dcterms:identifier "3QQFmXpxnAL_i4rN0QOvCC" .
+inst:2Ut6i6GuUtaViOPeDTXG9h a bpo:SingularEntity ; bpo:realisesObject inst:3QQFmXpxnAL_i4rN0QOvCC .
+inst:2qbG6pgRucq6ffWnj7WhAb a bpo:Product, bpo:Element ;
+    rdfs:label "Window 1000 x 1000" ;
+    dcterms:identifier "2qbG6pgRucq6ffWnj7WhAb" .
+inst:25fCQSB%24x%24UFG2snPgDt0P a bpo:SingularEntity ; bpo:realisesObject inst:2qbG6pgRucq6ffWnj7WhAb .
+inst:2xukAgdQTF7PPSTbXqpCi1 a bpo:Product, bpo:Element ;
+    rdfs:label "Window 1200 x 1200" ;
+    dcterms:identifier "2xukAgdQTF7PPSTbXqpCi1" .
+inst:16jEQpq8zY2D4KIpyupimP a bpo:SingularEntity ; bpo:realisesObject inst:2xukAgdQTF7PPSTbXqpCi1 .
+inst:07ZmmOJZPnKTUimOw3_9bd a bpo:SingularEntity ; bpo:realisesObject inst:2xukAgdQTF7PPSTbXqpCi1 .
+inst:1w9pufr1TDe0VYOM7FKvY2 a bpo:SingularEntity ; bpo:realisesObject inst:2xukAgdQTF7PPSTbXqpCi1 .
+inst:0Ny8LIhNx_dqgg7xQkoFPC a bpo:Product, bpo:Element ;
+    rdfs:label "Window 1800 x 1000" ;
+    dcterms:identifier "0Ny8LIhNx_dqgg7xQkoFPC" .
+inst:2xxuou0fenRZFg63mYIksn a bpo:SingularEntity ; bpo:realisesObject inst:0Ny8LIhNx_dqgg7xQkoFPC .
+inst:2JrHpwcF%24wGfrGfP2Wndff a bpo:Product, bpo:Element ;
+    rdfs:label "Window 1800 x 1200" ;
+    dcterms:identifier "2JrHpwcF$wGfrGfP2Wndff" .
+inst:3YWkF0dKlffxWmHPy%24nP%24a a bpo:SingularEntity ; bpo:realisesObject inst:2JrHpwcF%24wGfrGfP2Wndff .
+inst:1gPH%24xW1h_lJYJTqwhhe2u a bpo:Product, bpo:Element ;
+    rdfs:label "Window 600 x 600" ;
+    dcterms:identifier "1gPH$xW1h_lJYJTqwhhe2u" .
+inst:29uO8rpjgWILPQSkF5O6yb a bpo:SingularEntity ; bpo:realisesObject inst:1gPH%24xW1h_lJYJTqwhhe2u .
+
+# ---------------------------------------------------------------- flow systems and software systems
+inst:1ctdhDtIQN5oVRtmdQWb5B a fso:DistributionSystem ;
+    rdfs:label "Cold water" ;
+    dcterms:identifier "1ctdhDtIQN5oVRtmdQWb5B" .
+inst:1ctdhDtIQN5oVRtmdQWb5B fso:hasComponent inst:2pmrujdo%24lH2cY7LdVhmWz .
+inst:2pmrujdo%24lH2cY7LdVhmWz a fso:Terminal .
+inst:1ctdhDtIQN5oVRtmdQWb5B fso:hasComponent inst:2Ut6i6GuUtaViOPeDTXG9h .
+inst:2Ut6i6GuUtaViOPeDTXG9h a fso:StorageDevice .
+inst:1ctdhDtIQN5oVRtmdQWb5B fso:hasComponent inst:1ZgLf3BEIY2wWkSKUeDGt7 .
+inst:1ZgLf3BEIY2wWkSKUeDGt7 a fso:Terminal .
+inst:1ctdhDtIQN5oVRtmdQWb5B fso:hasComponent inst:0qJNpgU2UGud%24IYQvzwf3z .
+inst:0qJNpgU2UGud%24IYQvzwf3z a fso:Terminal .
+inst:1ctdhDtIQN5oVRtmdQWb5B fso:hasComponent inst:3u5MyvjHVRaloEq9mtHkcX .
+inst:3u5MyvjHVRaloEq9mtHkcX a fso:Segment .
+inst:1ctdhDtIQN5oVRtmdQWb5B fso:hasComponent inst:26Yfzdx5fllUmGubtyWnuT .
+inst:26Yfzdx5fllUmGubtyWnuT a fso:Segment .
+inst:1ctdhDtIQN5oVRtmdQWb5B fso:hasComponent inst:2sdwtEltCMCjtQN%24BjpPVN .
+inst:2sdwtEltCMCjtQN%24BjpPVN a fso:Segment .
+inst:1ctdhDtIQN5oVRtmdQWb5B fso:hasComponent inst:12Q80x1yqnrukodI7k4Sgo .
+inst:12Q80x1yqnrukodI7k4Sgo a fso:Segment .
+inst:1ctdhDtIQN5oVRtmdQWb5B fso:hasComponent inst:2EkWyAArNyMG7Kw_BnBNFG .
+inst:2EkWyAArNyMG7Kw_BnBNFG a fso:Segment .
+inst:2LE4XhiysmdNvGNSkE1YWL a fso:DistributionSystem ;
+    rdfs:label "Greywater" ;
+    dcterms:identifier "2LE4XhiysmdNvGNSkE1YWL" .
+inst:2LE4XhiysmdNvGNSkE1YWL fso:hasComponent inst:2pmrujdo%24lH2cY7LdVhmWz .
+inst:2pmrujdo%24lH2cY7LdVhmWz a fso:Terminal .
+inst:2LE4XhiysmdNvGNSkE1YWL fso:hasComponent inst:1ZgLf3BEIY2wWkSKUeDGt7 .
+inst:1ZgLf3BEIY2wWkSKUeDGt7 a fso:Terminal .
+inst:2LE4XhiysmdNvGNSkE1YWL fso:hasComponent inst:0qJNpgU2UGud%24IYQvzwf3z .
+inst:0qJNpgU2UGud%24IYQvzwf3z a fso:Terminal .
+inst:2LE4XhiysmdNvGNSkE1YWL fso:hasComponent inst:0Ye3KJAV2KOz2FG2rUUIzX .
+inst:0Ye3KJAV2KOz2FG2rUUIzX a fso:Segment .
+inst:2LE4XhiysmdNvGNSkE1YWL fso:hasComponent inst:2CaBsthnf4fD9HRPdKSTOa .
+inst:2CaBsthnf4fD9HRPdKSTOa a fso:Segment .
+inst:2LE4XhiysmdNvGNSkE1YWL fso:hasComponent inst:2VWgSfIZpbwBEsW9NfZSBd .
+inst:2VWgSfIZpbwBEsW9NfZSBd a fso:Segment .
+inst:2LE4XhiysmdNvGNSkE1YWL fso:hasComponent inst:3Pnyc%24xgPxVPcvGwzw4766 .
+inst:3Pnyc%24xgPxVPcvGwzw4766 a fso:Segment .
+inst:2LE4XhiysmdNvGNSkE1YWL fso:hasComponent inst:01tGX3U3QaDcAZWMU2SoBl .
+inst:01tGX3U3QaDcAZWMU2SoBl a fso:Segment .
+inst:2LE4XhiysmdNvGNSkE1YWL fso:hasComponent inst:1ftJWs35rZgx09bETaiqkF .
+inst:1ftJWs35rZgx09bETaiqkF a fso:Segment .
+inst:2LE4XhiysmdNvGNSkE1YWL fso:hasComponent inst:3Ep3E0pS3aGlQvjnMrgMd6 .
+inst:3Ep3E0pS3aGlQvjnMrgMd6 a fso:Component .
+inst:0SeCRla7VU1SFIY4ZGW6rt a fso:DistributionSystem ;
+    rdfs:label "Hot water" ;
+    dcterms:identifier "0SeCRla7VU1SFIY4ZGW6rt" .
+inst:0SeCRla7VU1SFIY4ZGW6rt fso:hasComponent inst:2pmrujdo%24lH2cY7LdVhmWz .
+inst:2pmrujdo%24lH2cY7LdVhmWz a fso:Terminal .
+inst:0SeCRla7VU1SFIY4ZGW6rt fso:hasComponent inst:2Ut6i6GuUtaViOPeDTXG9h .
+inst:2Ut6i6GuUtaViOPeDTXG9h a fso:StorageDevice .
+inst:0SeCRla7VU1SFIY4ZGW6rt fso:hasComponent inst:1ZgLf3BEIY2wWkSKUeDGt7 .
+inst:1ZgLf3BEIY2wWkSKUeDGt7 a fso:Terminal .
+inst:0SeCRla7VU1SFIY4ZGW6rt fso:hasComponent inst:0qJNpgU2UGud%24IYQvzwf3z .
+inst:0qJNpgU2UGud%24IYQvzwf3z a fso:Terminal .
+inst:0SeCRla7VU1SFIY4ZGW6rt fso:hasComponent inst:1Sm8nA7E_FgWN363fXF2iB .
+inst:1Sm8nA7E_FgWN363fXF2iB a fso:Segment .
+inst:0SeCRla7VU1SFIY4ZGW6rt fso:hasComponent inst:0E_VeernXcqnuLypB9FwBT .
+inst:0E_VeernXcqnuLypB9FwBT a fso:Segment .
+inst:0SeCRla7VU1SFIY4ZGW6rt fso:hasComponent inst:1z%24iy2oOVt1OG00eGdZPDl .
+inst:1z%24iy2oOVt1OG00eGdZPDl a fso:Segment .
+inst:0SeCRla7VU1SFIY4ZGW6rt fso:hasComponent inst:23PVxkWIkhD4853MRn991G .
+inst:23PVxkWIkhD4853MRn991G a fso:Segment .
+inst:0SeCRla7VU1SFIY4ZGW6rt fso:hasComponent inst:2r%24RXteHtUq1L6C9QZhGcE .
+inst:2r%24RXteHtUq1L6C9QZhGcE a fso:Segment .
+inst:0SeCRla7VU1SFIY4ZGW6rt fso:hasComponent inst:3D6MzUzZHc1%24ftItzeIRv%24 .
+inst:3D6MzUzZHc1%24ftItzeIRv%24 a fso:Segment .
+inst:31BXd2ARl1benLeO49MtiT a fso:DistributionSystem ;
+    rdfs:label "Toilet exhaust" ;
+    dcterms:identifier "31BXd2ARl1benLeO49MtiT" .
+inst:31BXd2ARl1benLeO49MtiT fso:hasComponent inst:3SHosRbbzvCvYo_OHDkYuG .
+inst:3SHosRbbzvCvYo_OHDkYuG a fso:Terminal .
+inst:31BXd2ARl1benLeO49MtiT fso:hasComponent inst:1T%24dMtd_3LYtBmNsTE0PbT .
+inst:1T%24dMtd_3LYtBmNsTE0PbT a fso:Segment .
+inst:31BXd2ARl1benLeO49MtiT fso:hasComponent inst:2mEPsoauC9z_ra5gkOMt_q .
+inst:2mEPsoauC9z_ra5gkOMt_q a fso:Segment .
+inst:1zoulFTXfm5Oo1nyqSqDlB a cot:SoftwareSystem ;
+    rdfs:label "BeeKeeper" ;
+    dcterms:identifier "1zoulFTXfm5Oo1nyqSqDlB" .
+inst:1zoulFTXfm5Oo1nyqSqDlB cot:manages inst:3Y5XgJhSzGL_XiTyBq12zQ .
+inst:1zoulFTXfm5Oo1nyqSqDlB cot:manages inst:0kLyU0NRsxxGyxPRyFr6c4 .
+inst:1zoulFTXfm5Oo1nyqSqDlB cot:manages inst:0Z1oQk0Tfe6BlcQETimvQP .
+inst:1zoulFTXfm5Oo1nyqSqDlB cot:manages inst:3sJlA8CUlQzk3nuE8p1BJR .
+inst:1zoulFTXfm5Oo1nyqSqDlB cot:manages inst:0mY0C__ReYxMT4prbNwp7J .
+inst:1zoulFTXfm5Oo1nyqSqDlB cot:manages inst:0x%24j_PQ7DvIgJOqDLt%24PND .
+inst:1zoulFTXfm5Oo1nyqSqDlB cot:manages inst:00rRd4hB4LJxqvzyZFGBNX .
+inst:1zoulFTXfm5Oo1nyqSqDlB cot:manages inst:17Q9ydsRULzHxP5YKlnOwI .
+inst:3xK4au483teo5L7IyzFcAP a cot:SoftwareSystem ;
+    rdfs:label "Meteorologue" ;
+    dcterms:identifier "3xK4au483teo5L7IyzFcAP" .
+inst:3xK4au483teo5L7IyzFcAP cot:manages inst:0eZM5gNDYXC7zQxTA3SS7g .
+inst:3xK4au483teo5L7IyzFcAP cot:manages inst:3n4EuHrZvBtnv3m1%24RVoYN .
+inst:3xK4au483teo5L7IyzFcAP cot:manages inst:3%24JcPSI2OtTkRTWYBjoVQd .
+inst:3xK4au483teo5L7IyzFcAP cot:manages inst:3rx1J3GUAHiNk2vHUTdA49 .
+
+# ---------------------------------------------------------------- classification
+inst:e1508 a skos:ConceptScheme ;
+    skos:prefLabel "cottage-placeholder" ;
+    rdfs:comment "Made-up identifications. The structure is real IFC; the codes are not a published table." ;
+    dcterms:source "Placeholder scheme (replace with CoClass)" .
+inst:concept-1 a skos:Concept ; skos:notation "EW" ; skos:prefLabel "Exterior wall"
+    ; skos:inScheme inst:e1508
+    .
+inst:319gvN_KvC4UHgkIk4CAA_ dcterms:subject inst:concept-1 .
+inst:concept-2 a skos:Concept ; skos:notation "IW" ; skos:prefLabel "Interior partition"
+    ; skos:inScheme inst:e1508
+    .
+inst:0aeuGtlwsefNQBwPphIj_z dcterms:subject inst:concept-2 .
+inst:concept-3 a skos:Concept ; skos:notation "FL" ; skos:prefLabel "Ground floor"
+    ; skos:inScheme inst:e1508
+    .
+inst:12Ovwn8YuJs2EtTNKQbj3M dcterms:subject inst:concept-3 .
+inst:concept-4 a skos:Concept ; skos:notation "RF" ; skos:prefLabel "Roof"
+    ; skos:inScheme inst:e1508
+    .
+inst:3PSMJPLsqqKsX3Wb%24bmcxT dcterms:subject inst:concept-4 .
+inst:concept-5 a skos:Concept ; skos:notation "RF" ; skos:prefLabel "Roof"
+    ; skos:inScheme inst:e1508
+    .
+inst:2Lqr77tuv4fMTSzPmpd3BQ dcterms:subject inst:concept-5 .
+inst:concept-6 a skos:Concept ; skos:notation "WI" ; skos:prefLabel "Window"
+    ; skos:inScheme inst:e1508
+    .
+inst:1gPH%24xW1h_lJYJTqwhhe2u dcterms:subject inst:concept-6 .
+inst:concept-7 a skos:Concept ; skos:notation "WI" ; skos:prefLabel "Window"
+    ; skos:inScheme inst:e1508
+    .
+inst:2qbG6pgRucq6ffWnj7WhAb dcterms:subject inst:concept-7 .
+inst:concept-8 a skos:Concept ; skos:notation "WI" ; skos:prefLabel "Window"
+    ; skos:inScheme inst:e1508
+    .
+inst:2xukAgdQTF7PPSTbXqpCi1 dcterms:subject inst:concept-8 .
+inst:concept-9 a skos:Concept ; skos:notation "WI" ; skos:prefLabel "Window"
+    ; skos:inScheme inst:e1508
+    .
+inst:0Ny8LIhNx_dqgg7xQkoFPC dcterms:subject inst:concept-9 .
+inst:concept-10 a skos:Concept ; skos:notation "WI" ; skos:prefLabel "Window"
+    ; skos:inScheme inst:e1508
+    .
+inst:2JrHpwcF%24wGfrGfP2Wndff dcterms:subject inst:concept-10 .
+inst:concept-11 a skos:Concept ; skos:notation "DR" ; skos:prefLabel "Interior door"
+    ; skos:inScheme inst:e1508
+    .
+inst:2nWUwWJtQIXSUC5R7%24vbuw dcterms:subject inst:concept-11 .
+inst:concept-12 a skos:Concept ; skos:notation "DR" ; skos:prefLabel "Interior door"
+    ; skos:inScheme inst:e1508
+    .
+inst:0rlVEKMfp06DG%240U7vSKGj dcterms:subject inst:concept-12 .
+inst:concept-13 a skos:Concept ; skos:notation "DE" ; skos:prefLabel "Entrance door"
+    ; skos:inScheme inst:e1508
+    .
+inst:3dKXEy_vwkDECl6CZyB5J3 dcterms:subject inst:concept-13 .
+inst:concept-14 a skos:Concept ; skos:notation "HT" ; skos:prefLabel "Space heating terminal"
+    ; skos:inScheme inst:e1508
+    .
+inst:3yk5khJB7J_lJ1GtjLG%24mw dcterms:subject inst:concept-14 .
+inst:concept-15 a skos:Concept ; skos:notation "HT" ; skos:prefLabel "Space heating terminal"
+    ; skos:inScheme inst:e1508
+    .
+inst:2YOQScignBFe%24kFZ3FJbbR dcterms:subject inst:concept-15 .
+inst:concept-16 a skos:Concept ; skos:notation "EO" ; skos:prefLabel "Switched power outlet"
+    ; skos:inScheme inst:e1508
+    .
+inst:1FWdkg0Gv5kQGxROhTn7%24k dcterms:subject inst:concept-16 .
+inst:concept-17 a skos:Concept ; skos:notation "SN" ; skos:prefLabel "Sensor"
+    ; skos:inScheme inst:e1508
+    .
+inst:35umh8QtPIxCkyjth6aHHx dcterms:subject inst:concept-17 .
+inst:concept-18 a skos:Concept ; skos:notation "SN" ; skos:prefLabel "Sensor"
+    ; skos:inScheme inst:e1508
+    .
+inst:0aY726HHY_J7Low075Q9rj dcterms:subject inst:concept-18 .
+inst:concept-19 a skos:Concept ; skos:notation "SN" ; skos:prefLabel "Sensor"
+    ; skos:inScheme inst:e1508
+    .
+inst:2O1DUOpB5tnQ4IHIExBR3P dcterms:subject inst:concept-19 .
+inst:concept-20 a skos:Concept ; skos:notation "SA" ; skos:prefLabel "Sanitary appliance"
+    ; skos:inScheme inst:e1508
+    .
+inst:156UBXYF8w5oMl1dz_YbJy dcterms:subject inst:concept-20 .
+inst:concept-21 a skos:Concept ; skos:notation "SA" ; skos:prefLabel "Sanitary appliance"
+    ; skos:inScheme inst:e1508
+    .
+inst:02atnnk719ikmFK1jyBAU_ dcterms:subject inst:concept-21 .
+inst:concept-22 a skos:Concept ; skos:notation "SA" ; skos:prefLabel "Sanitary appliance"
+    ; skos:inScheme inst:e1508
+    .
+inst:20DnsdIwqqu9Yum0%24u08i2 dcterms:subject inst:concept-22 .
+inst:concept-23 a skos:Concept ; skos:notation "SA" ; skos:prefLabel "Sanitary appliance"
+    ; skos:inScheme inst:e1508
+    .
+inst:1k99nfs5WhXigElcRMJg70 dcterms:subject inst:concept-23 .
+inst:concept-24 a skos:Concept ; skos:notation "HW" ; skos:prefLabel "Hot water generation"
+    ; skos:inScheme inst:e1508
+    .
+inst:3QQFmXpxnAL_i4rN0QOvCC dcterms:subject inst:concept-24 .
+inst:concept-25 a skos:Concept ; skos:notation "PW" ; skos:prefLabel "Water supply pipe"
+    ; skos:inScheme inst:e1508
+    .
+inst:0BpAXjlEJTPMXzEnm_iL5K dcterms:subject inst:concept-25 .
+inst:concept-26 a skos:Concept ; skos:notation "PW" ; skos:prefLabel "Water supply pipe"
+    ; skos:inScheme inst:e1508
+    .
+inst:0KPR2GciEa1JzrKSxdxPDR dcterms:subject inst:concept-26 .
+inst:concept-27 a skos:Concept ; skos:notation "WW" ; skos:prefLabel "Waste pipe"
+    ; skos:inScheme inst:e1508
+    .
+inst:2_zf0VVd9dmasYDSRezyHD dcterms:subject inst:concept-27 .
+inst:concept-28 a skos:Concept ; skos:notation "VT" ; skos:prefLabel "Ventilation duct"
+    ; skos:inScheme inst:e1508
+    .
+inst:3bdPueGarDyU%24a87obXHz9 dcterms:subject inst:concept-28 .
+inst:concept-29 a skos:Concept ; skos:notation "WC" ; skos:prefLabel "Waste water chamber"
+    ; skos:inScheme inst:e1508
+    .
+inst:3sdPBks_110UmzwkxBa_ae dcterms:subject inst:concept-29 .
+inst:concept-30 a skos:Concept ; skos:notation "AP" ; skos:prefLabel "Domestic appliance"
+    ; skos:inScheme inst:e1508
+    .
+inst:2cWbPWpKSV9pB%24E9iux4go dcterms:subject inst:concept-30 .
+inst:concept-31 a skos:Concept ; skos:notation "AP" ; skos:prefLabel "Domestic appliance"
+    ; skos:inScheme inst:e1508
+    .
+inst:04cPXIUyo%24JjApgKWJc0Vt dcterms:subject inst:concept-31 .
+inst:concept-32 a skos:Concept ; skos:notation "FU" ; skos:prefLabel "Fixed furniture"
+    ; skos:inScheme inst:e1508
+    .
+inst:1l9rGqh_gJZoHsdeR1KrGo dcterms:subject inst:concept-32 .
+inst:concept-33 a skos:Concept ; skos:notation "EX" ; skos:prefLabel "External structure"
+    ; skos:inScheme inst:e1508
+    .
+inst:2EUS1AQvYzMz9BMzTvY8Bs dcterms:subject inst:concept-33 .
+
+# ---------------------------------------------------------------- property sets
+inst:2pmrujdo%24lH2cY7LdVhmWz cot:networks "Cold water, Hot water, Greywater" .
+inst:2mPoLgI_oIPvQ44dKqLmyL cot:note "Full height; should finish level with the bedroom wall" .
+inst:3Y5XgJhSzGL_XiTyBq12zQ cot:mbaigoSystem "BeeKeeper" .
+inst:3Y5XgJhSzGL_XiTyBq12zQ cot:nominalPower "2000"^^xsd:double .
+inst:3Y5XgJhSzGL_XiTyBq12zQ cot:switchedBy "Aqara smart plug" .
+inst:3Y5XgJhSzGL_XiTyBq12zQ cot:note "Under the kitchen window beside the entrance" .
+inst:0kLyU0NRsxxGyxPRyFr6c4 cot:mbaigoSystem "BeeKeeper" .
+inst:0kLyU0NRsxxGyxPRyFr6c4 cot:deviceType "Aqara smart plug" .
+inst:0Z1oQk0Tfe6BlcQETimvQP cot:mbaigoSystem "BeeKeeper" .
+inst:0Z1oQk0Tfe6BlcQETimvQP cot:nominalPower "2000"^^xsd:double .
+inst:0Z1oQk0Tfe6BlcQETimvQP cot:switchedBy "Aqara smart plug" .
+inst:0Z1oQk0Tfe6BlcQETimvQP cot:note "Under the window on the far side of the entrance" .
+inst:3sJlA8CUlQzk3nuE8p1BJR cot:mbaigoSystem "BeeKeeper" .
+inst:3sJlA8CUlQzk3nuE8p1BJR cot:deviceType "Aqara smart plug" .
+inst:0mY0C__ReYxMT4prbNwp7J cot:mbaigoSystem "BeeKeeper" .
+inst:0mY0C__ReYxMT4prbNwp7J cot:nominalPower "2000"^^xsd:double .
+inst:0mY0C__ReYxMT4prbNwp7J cot:switchedBy "Aqara smart plug" .
+inst:0mY0C__ReYxMT4prbNwp7J cot:note "Under the window on the rise's other side" .
+inst:0x%24j_PQ7DvIgJOqDLt%24PND cot:mbaigoSystem "BeeKeeper" .
+inst:0x%24j_PQ7DvIgJOqDLt%24PND cot:deviceType "Aqara smart plug" .
+inst:00rRd4hB4LJxqvzyZFGBNX cot:mbaigoSystem "BeeKeeper" .
+inst:00rRd4hB4LJxqvzyZFGBNX cot:nominalPower "1000"^^xsd:double .
+inst:00rRd4hB4LJxqvzyZFGBNX cot:switchedBy "Aqara smart plug" .
+inst:00rRd4hB4LJxqvzyZFGBNX cot:note "On the wall opposite the bathroom window" .
+inst:17Q9ydsRULzHxP5YKlnOwI cot:mbaigoSystem "BeeKeeper" .
+inst:17Q9ydsRULzHxP5YKlnOwI cot:deviceType "Aqara smart plug" .
+inst:2Ut6i6GuUtaViOPeDTXG9h cot:storageCapacity "0.03"^^xsd:double .
+inst:2Ut6i6GuUtaViOPeDTXG9h cot:networks "Cold water, Hot water" .
+inst:2Ut6i6GuUtaViOPeDTXG9h cot:note "30 litre electric storage heater; wall-hung, height ASSUMED" .
+inst:1ZgLf3BEIY2wWkSKUeDGt7 cot:networks "Cold water, Hot water, Greywater" .
+inst:1ZgLf3BEIY2wWkSKUeDGt7 cot:note "Under the bathroom window" .
+inst:0qJNpgU2UGud%24IYQvzwf3z cot:networks "Cold water, Hot water, Greywater" .
+inst:0qJNpgU2UGud%24IYQvzwf3z cot:note "In the corner of the two outside walls; 800 x 800 ASSUMED" .
+inst:3SHosRbbzvCvYo_OHDkYuG cot:model "Cinderella Classic" .
+inst:3SHosRbbzvCvYo_OHDkYuG cot:waterSupply "None" .
+inst:3SHosRbbzvCvYo_OHDkYuG cot:wasteDisposal "Incineration, electric" .
+inst:3SHosRbbzvCvYo_OHDkYuG cot:networks "Toilet exhaust" .
+inst:3SHosRbbzvCvYo_OHDkYuG cot:note "Electric incinerating toilet: no water supply and no drain. Size ASSUMED" .
+inst:1T%24dMtd_3LYtBmNsTE0PbT cot:networks "Toilet exhaust" .
+inst:2mEPsoauC9z_ra5gkOMt_q cot:networks "Toilet exhaust" .
+inst:2mEPsoauC9z_ra5gkOMt_q cot:note "Terminates 1 m above the eave, passing through the roof overhang" .
+inst:3u5MyvjHVRaloEq9mtHkcX cot:networks "Cold water" .
+inst:3u5MyvjHVRaloEq9mtHkcX cot:note "Enters under the kitchen sink and connects straight to it" .
+inst:26Yfzdx5fllUmGubtyWnuT cot:networks "Cold water" .
+inst:26Yfzdx5fllUmGubtyWnuT cot:note "Along the outer wall, through the bedroom" .
+inst:2sdwtEltCMCjtQN%24BjpPVN cot:networks "Cold water" .
+inst:12Q80x1yqnrukodI7k4Sgo cot:networks "Cold water" .
+inst:2EkWyAArNyMG7Kw_BnBNFG cot:networks "Cold water" .
+inst:1Sm8nA7E_FgWN363fXF2iB cot:networks "Hot water" .
+inst:0E_VeernXcqnuLypB9FwBT cot:networks "Hot water" .
+inst:1z%24iy2oOVt1OG00eGdZPDl cot:networks "Hot water" .
+inst:23PVxkWIkhD4853MRn991G cot:networks "Hot water" .
+inst:2r%24RXteHtUq1L6C9QZhGcE cot:networks "Hot water" .
+inst:3D6MzUzZHc1%24ftItzeIRv%24 cot:networks "Hot water" .
+inst:0Ye3KJAV2KOz2FG2rUUIzX cot:networks "Greywater" .
+inst:2CaBsthnf4fD9HRPdKSTOa cot:networks "Greywater" .
+inst:2VWgSfIZpbwBEsW9NfZSBd cot:networks "Greywater" .
+inst:3Pnyc%24xgPxVPcvGwzw4766 cot:networks "Greywater" .
+inst:01tGX3U3QaDcAZWMU2SoBl cot:networks "Greywater" .
+inst:1ftJWs35rZgx09bETaiqkF cot:networks "Greywater" .
+inst:3Ep3E0pS3aGlQvjnMrgMd6 cot:networks "Greywater" .
+inst:3Ep3E0pS3aGlQvjnMrgMd6 cot:note "10 m off the north-east corner, taken along the diagonal. Size ASSUMED" .
+inst:0eZM5gNDYXC7zQxTA3SS7g cot:mbaigoSystem "Meteorologue" .
+inst:0eZM5gNDYXC7zQxTA3SS7g cot:deviceType "NetAtmo module" .
+inst:0eZM5gNDYXC7zQxTA3SS7g cot:note "Indoor module; position within the living area ASSUMED" .
+inst:3n4EuHrZvBtnv3m1%24RVoYN cot:mbaigoSystem "Meteorologue" .
+inst:3n4EuHrZvBtnv3m1%24RVoYN cot:deviceType "NetAtmo module" .
+inst:3n4EuHrZvBtnv3m1%24RVoYN cot:note "On the north side; height and position along the wall ASSUMED" .
+inst:3%24JcPSI2OtTkRTWYBjoVQd cot:mbaigoSystem "Meteorologue" .
+inst:3%24JcPSI2OtTkRTWYBjoVQd cot:deviceType "NetAtmo module" .
+inst:3%24JcPSI2OtTkRTWYBjoVQd cot:note "Extra indoor module; position within the bathroom ASSUMED" .
+inst:24LasyssjGEZnDVRNGgUyu cot:note "Mast height ASSUMED" .
+inst:3rx1J3GUAHiNk2vHUTdA49 cot:mbaigoSystem "Meteorologue" .
+inst:3rx1J3GUAHiNk2vHUTdA49 cot:deviceType "NetAtmo module" .
+inst:3rx1J3GUAHiNk2vHUTdA49 cot:note "50 m in front of the house" .
