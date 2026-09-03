@@ -1,0 +1,30 @@
+@prefix inst: <https://vandeventer.github.io/ifc/cottage/> .
+@prefix cot:  <https://vandeventer.github.io/ifc/cottage/vocab#> .
+@prefix alc:  <http://www.synecdoque.com/lcloud/> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+# Joins the mbaigo runtime graph to the building model.
+#
+# Load this alongside cottage.ttl and the cloud's graph. It is kept out of
+# both because it speaks about a namespace neither side owns and is true of
+# one local cloud only.
+#
+# Not owl:sameAs: Kitchen and Entrance are both in the one open room here,
+# and identity is symmetric and transitive, so asserting it twice would make
+# the kitchen and the entrance the same thing. The relation is many to one.
+
+cot:locatedIn a owl:ObjectProperty ;
+    rdfs:label "located in" ;
+    rdfs:comment "Relates an mbaigo functional location to the IFC space it is in. Many functional locations may share one space, so this is not identity." .
+
+# Bathroom
+alc:Bathroom cot:locatedIn inst:3Ku0xXoV%24PR9jlVvMw9yFe .
+
+# Kitchen / dining / living
+alc:Kitchen cot:locatedIn inst:3h6%243R33ye%24kqziK0VEzg7 .
+alc:Entrance cot:locatedIn inst:3h6%243R33ye%24kqziK0VEzg7 .
+
+# 3 functional location(s) placed in 3 room(s).
+# A functional location the cloud uses that is not listed here is either in
+# another building or not a room at all: Outdoor, Lab and Plant are all three.

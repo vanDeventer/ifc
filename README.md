@@ -298,6 +298,42 @@ SELECT ?component WHERE {
 }
 ```
 
+## Joining the runtime graph
+
+`cottage.align.ttl` is the third graph, joining mbaigo's runtime graph to this
+building model. mbaigo names a device's place with a human label — `alc:Kitchen`
+— and the IFC names the same room by its `IfcGloballyUniqueId`. Nothing relates
+them, so the join has to be asserted.
+
+**The generator can assert it without anyone maintaining a list**, because the
+room identifiers are `SpaceGUID(name)`, a pure function of the room's name in
+`params.go`. The generator knows both ends, so it writes the mapping itself. A
+test checks that every identifier the alignment names is really in the IFC.
+
+**It is not `owl:sameAs`.** Two of the cloud's functional locations, Kitchen and
+Entrance, are in the same open room here. Identity is symmetric and transitive,
+so asserting it twice entails `alc:Kitchen owl:sameAs alc:Entrance`, and a
+reasoner merges everything said about either. The relation is many functional
+locations to one room, which identity cannot express. `cot:locatedIn` says only
+what is true.
+
+**It is a separate file** because it speaks about a namespace neither side owns
+and is true of one local cloud only. `cottage.ttl` stays good on its own.
+
+Loading all three and asking which room a running device is in:
+
+```sparql
+SELECT ?device ?room WHERE {
+  ?d afo:hasName ?device ; afo:hasFunctionalLocation ?fl .
+  ?fl cot:locatedIn ?space .
+  ?space a bot:Space ; rdfs:label ?room .
+}
+#   thermostat | Living
+```
+
+Which then reaches everything the building model knows: what else is in that
+room, what bounds it, which flow systems serve it.
+
 ## What came from where
 
 Given as measurements: the L footprint, the four room widths along the back

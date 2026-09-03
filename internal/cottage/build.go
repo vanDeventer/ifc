@@ -344,7 +344,7 @@ func (b *builder) writeSpaces(p Params) []ifc.Ref {
 		b.polys[s.Name] = s.Polygon
 		prof := b.f.PolyProfile(s.Name, s.Polygon)
 		solid := b.f.ExtrudeUp(prof, 0, p.Ceiling)
-		r := b.f.Add("IFCSPACE", ifc.GUID("space-"+s.Name), b.owner, s.Name, ifc.Null{}, ifc.Null{},
+		r := b.f.Add("IFCSPACE", SpaceGUID(s.Name), b.owner, s.Name, ifc.Null{}, ifc.Null{},
 			b.f.PlacedAt(b.floor, 0, 0, 0), b.f.BodyShape(b.body, solid), s.Long,
 			ifc.Enum("ELEMENT"), ifc.Enum("SPACE"), 0.0)
 		b.spaces[s.Name] = r
@@ -370,3 +370,8 @@ func (b *builder) penetrations(p Params) {
 			ifc.Null{}, ifc.Null{}, host, void)
 	}
 }
+
+// SpaceGUID is the IfcGloballyUniqueId given to a room. It is a pure function of
+// the room's name, which is what lets the alignment graph name the same rooms
+// without either side keeping a hand-written list.
+func SpaceGUID(name string) string { return ifc.GUID("space-" + name) }

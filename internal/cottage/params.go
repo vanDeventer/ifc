@@ -165,6 +165,12 @@ type Space struct {
 	Name    string
 	Long    string
 	Polygon [][2]float64
+
+	// Functional lists the mbaigo functional locations that sit in this room.
+	// It is a list because an open plan room holds more than one: the entrance
+	// and the kitchen are both in the same space here. Declared rather than
+	// guessed from the room name, since the two vocabularies are independent.
+	Functional []string
 }
 
 // Fitting is anything standing in or on the building rather than forming it:
@@ -308,17 +314,21 @@ func Default() Params {
 			{Name: "Bedroom", Long: "Bedroom", Polygon: [][2]float64{
 				{bedW + hi, bedS + hi}, {hallW - hi, bedS + hi}, {hallW - hi, y2}, {bedW + hi, y2},
 			}},
-			{Name: "Bathroom", Long: "Bathroom", Polygon: [][2]float64{
-				{bathW + hi, bathS + hi}, {x2, bathS + hi}, {x2, y2}, {bathW + hi, y2},
-			}},
+			{Name: "Bathroom", Long: "Bathroom", Functional: []string{"Bathroom"},
+				Polygon: [][2]float64{
+					{bathW + hi, bathS + hi}, {x2, bathS + hi}, {x2, y2}, {bathW + hi, y2},
+				}},
 			// Kitchen, dining and living are one open space; only the bedroom
 			// and bathroom were described as closed rooms.
-			{Name: "Living", Long: "Kitchen / dining / living", Polygon: [][2]float64{
-				{x0, y1}, {x1, y1}, {x1, y0}, {x2, y0},
-				{x2, bathS - hi}, {bathW - hi, bathS - hi}, {bathW - hi, y2},
-				{hallW + hi, y2}, {hallW + hi, bedS - hi}, {bedW - hi, bedS - hi},
-				{bedW - hi, y2}, {x0, y2},
-			}},
+			{Name: "Living", Long: "Kitchen / dining / living",
+				// Two of the cloud's functional locations are in this one room.
+				Functional: []string{"Kitchen", "Entrance"},
+				Polygon: [][2]float64{
+					{x0, y1}, {x1, y1}, {x1, y0}, {x2, y0},
+					{x2, bathS - hi}, {bathW - hi, bathS - hi}, {bathW - hi, y2},
+					{hallW + hi, y2}, {hallW + hi, bedS - hi}, {bedW - hi, bedS - hi},
+					{bedW - hi, y2}, {x0, y2},
+				}},
 		},
 
 		Fittings: fittings(bedW-hi, bathW+hi, bathS+hi, x1, x2, y1, y2),

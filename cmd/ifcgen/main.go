@@ -70,8 +70,16 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// The join to the mbaigo runtime graph, kept separate on purpose.
+	align := cottage.Alignment(p, cottage.AlignOptions{Base: *base})
+	alignPath := filepath.Join(*out, "cottage.align.ttl")
+	if err := os.WriteFile(alignPath, []byte(align), 0o644); err != nil {
+		log.Fatal(err)
+	}
+
 	fmt.Printf("%s  %d bytes\n", ifcPath, buf.Len())
 	fmt.Printf("%s  %d bytes\n", ttlPath, len(ttl))
+	fmt.Printf("%s  %d bytes\n", alignPath, len(align))
 	fmt.Printf("%s\n", htmlPath)
 	fmt.Printf("%s\n", fragPath)
 }
